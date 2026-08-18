@@ -1,0 +1,9 @@
+# npm/github distribution patch layer: registers the Prism client plugin
+# into the profile's browser roster. Installing with
+#   dsh plugin --profile web add github:mantonlove/dsh-prism-plugin
+# pulls this patch into the profile's layer stack, and the row below makes
+# the web UI load the plugin's bundled client (the package's `dsh.client`
+# declaration marks it as a browser-roster entry).
+- insert:
+    - id: ui-prism
+      name: 'dsh-client-ui-prism'

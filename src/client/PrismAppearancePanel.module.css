@@ -1,0 +1,175 @@
+/* Prism appearance panel (General settings, under Appearance). Tokens only. */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0 4px;
+}
+
+.caption {
+  margin: 8px 0 2px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.hint {
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.error {
+  color: var(--dsw-alias-state-error-primary);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.customFont {
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 20px;
+  outline: none;
+}
+
+.customFont:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+.wallpaperRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wallpaperButton,
+.wallpaperDelete,
+.presetButton,
+.resetButton {
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-secondary);
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.wallpaperButton:hover:not(:disabled),
+.wallpaperDelete:hover:not(:disabled),
+.presetButton:hover:not(:disabled),
+.resetButton:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.wallpaperButton:focus-visible,
+.wallpaperDelete:focus-visible,
+.presetButton:focus-visible,
+.resetButton:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+.wallpaperDelete {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.wallpaperThumb {
+  width: 72px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.wallpaperThumbButton,
+.wallpaperThumbActive {
+  position: relative;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.wallpaperDeleteBadge {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.45);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.wallpaperThumbButton {
+  border: 1px solid var(--dsw-alias-border-l3);
+}
+
+.wallpaperThumbActive {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+  border: 1px solid var(--dsw-alias-border-l3);
+}
+
+.wallpaperThumbButton:focus-visible,
+.wallpaperThumbActive:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+.presetRow {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.presetRow .presetButton,
+.presetRow .resetButton {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.resetButton {
+  color: var(--dsw-alias-state-warn-label);
+}
+
+.fileInput {
+  display: none;
+}
+
+
+.wallpaperList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.wallpaperScheme {
+  flex-basis: 100%;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.wallpaperRow {
+  flex: none;
+  margin: 0;
+}
+

@@ -1,0 +1,449 @@
+/* ============================================================================
+ * Prism theme layer — the glass skin over the whole Web surface.
+ * Every rule is gated on the `data-dsh-prism` attribute the plugin puts on
+ * <html> while enabled (removed on disable, and the stylesheet itself is
+ * unloaded with the plugin bundle), so off == the stock UI, exactly.
+ * Selectors deliberately use attribute/element hooks and stable class-name
+ * substrings (never hashed module classes) so the layer survives recompiles.
+ * ========================================================================== */
+
+/* ---------- Ambient scene: aurora + wallpaper + brightness veil, mounted by
+   the plugin behind all content (negative z-index paints above the canvas-
+   propagated body background). ---------- */
+[data-prism-ambient] {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+[data-prism-aurora] {
+  position: absolute;
+  inset: -22%;
+  background-image:
+    radial-gradient(38% 32% at 22% 18%, hsl(var(--prism-bg-h, 215) var(--prism-bg-s, 80%) var(--prism-bg-l, 60%) / calc(0.2 * var(--prism-motion, 0.5))), transparent 62%),
+    radial-gradient(34% 30% at 78% 26%, hsl(calc(var(--prism-bg-h, 215) + 60) var(--prism-bg-s, 80%) var(--prism-bg-l, 60%) / calc(0.16 * var(--prism-motion, 0.5))), transparent 62%),
+    radial-gradient(42% 36% at 52% 92%, hsl(calc(var(--prism-bg-h, 215) + 120) var(--prism-bg-s, 80%) var(--prism-bg-l, 60%) / calc(0.14 * var(--prism-motion, 0.5))), transparent 64%);
+  background-size: 200% 200%;
+  animation:
+    prism-aurora-drift 46s var(--ds-ease-in-out, ease-in-out) infinite alternate,
+    prism-aurora-breathe 9s var(--ds-ease-in-out, ease-in-out) infinite alternate;
+  animation-duration:
+    calc(46s / var(--prism-motion-scale, 1)),
+    calc(9s / var(--prism-motion-scale, 1));
+}
+
+@keyframes prism-aurora-drift {
+  0%   { background-position: 0% 0%, 100% 100%, 50% 50%; }
+  100% { background-position: 100% 100%, 0% 0%, 50% 100%; }
+}
+
+@keyframes prism-aurora-breathe {
+  from { opacity: 0.82; }
+  to   { opacity: 1; }
+}
+
+/* Brightness knob veil: dark mode darkens, light mode brightens. */
+[data-prism-brightness] {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / var(--prism-brightness-white, 0)), rgb(255 255 255 / var(--prism-brightness-white, 0))),
+    linear-gradient(rgb(0 0 0 / var(--prism-brightness-black, 0)), rgb(0 0 0 / var(--prism-brightness-black, 0)));
+}
+
+/* Wallpaper layer: photo / GIF with blur + auto-dimming veil. */
+[data-prism-wallpaper] {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+[data-dsh-prism][data-prism-wallpaper-on] [data-prism-wallpaper] {
+  display: block;
+}
+
+[data-prism-wallpaper-img] {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(var(--prism-wallpaper-blur, 0px));
+  /* Rotation crossfade; the layer restarts the animation on each src swap. */
+  animation: prism-wallpaper-in 0.8s var(--ds-ease-in-out, ease-in-out);
+}
+
+@keyframes prism-wallpaper-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+[data-prism-wallpaper]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(255 255 255 / var(--prism-wall-veil, 0));
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] [data-prism-wallpaper]::after {
+  background: rgb(8 12 20 / var(--prism-wall-veil, 0));
+}
+
+/* ---------- Open the viewport: the frame and the conversation root paint
+   the opaque base over the ambient layer, so both go transparent or the
+   aurora / wallpaper never reach the eye. ---------- */
+[data-dsh-prism] [class*='frame'],
+[data-dsh-prism] [data-phase],
+[data-dsh-prism] [class*='detailsCol'] {
+  background: transparent;
+}
+
+/* ---------- Floating glass surfaces. Every pane: frosted backdrop blur with
+   saturation richness, a 1px top bevel highlight, and soft depth. ---------- */
+
+[data-dsh-prism] [class*='sidebarCol'],
+[data-dsh-prism] header,
+[data-dsh-prism] [data-composer-card],
+[data-dsh-prism] [class*='bubble'],
+[data-dsh-prism] [role='menu'],
+[data-dsh-prism] [class*='card'],
+[data-dsh-prism] [class*='panel'],
+[data-dsh-prism] [class*='popover'],
+[data-dsh-prism] [class*='dropdown'] {
+  backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
+  -webkit-backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
+}
+
+/* The settings dialog turns glass material-only (its layout stays stock). */
+[data-dsh-prism] body [role='dialog'] {
+  background: rgb(255 255 255 / calc(0.45 * var(--prism-frost, 1)));
+  backdrop-filter: blur(50px) saturate(var(--prism-saturate, 130%));
+  -webkit-backdrop-filter: blur(50px) saturate(var(--prism-saturate, 130%));
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] [role='dialog'] {
+  background: rgb(17 26 39 / calc(0.55 * var(--prism-frost, 1)));
+}
+
+/* While the settings dialog is open the sidebar must not carry a
+   backdrop-filter: it re-anchors the dialog's fixed overlay into the column. */
+[data-dsh-prism] [class*='sidebarCol']:has([role='dialog']) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Sidebar: detached glass card with a luminous right edge. The insets stay
+   small so the session rows keep their full width (titles plus timestamps). */
+[data-dsh-prism] [class*='sidebarCol'] {
+  position: relative;
+  z-index: 9;
+  margin: 10px;
+  padding: 10px 8px 14px;
+  border: 1px solid rgb(19 45 83 / 0.26);
+  border-right: 1px solid rgb(150 190 245 / 0.65);
+  border-radius: 20px;
+  background: rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-sidebar, 1)));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    0 10px 34px rgb(19 45 83 / 0.16);
+  overflow: hidden;
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] [class*='sidebarCol'] {
+  background: rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-sidebar, 1)));
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] [class*='sidebarCol'] {
+  border-color: rgb(148 180 220 / 0.32);
+  border-right: 1px solid rgb(148 180 220 / 0.2);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 8px 30px rgb(2 6 14 / 0.32);
+}
+
+/* The frame's sidebar drag handle (an 8px hit strip straddling the column
+   border) must stay grabbable above the floating card: the column carries
+   z-index 9, so the handle out-ranks it — and its -4px centering gains the
+   card's 10px visual inset so the strip rides the card's right edge. */
+[data-dsh-prism] [class*='handle'][data-side='sidebar'] {
+  z-index: 10;
+  margin-left: -14px;
+}
+
+/* Release the sidebar root's frozen inline width while expanded so the
+   content follows the glass card's inset box (the stock root renders at the
+   full column width and would be clipped by the card's overflow). The slot
+   renderer wraps every entry in a layout-neutral <div data-slot> anchor, so
+   the selector steps through it; the direct-child chain keeps the settings
+   panel's deeper roots untouched. */
+[data-dsh-prism] :has(> [class*='sidebarCol']):not([data-sidebar-collapsed]) [class*='sidebarCol'] > [data-slot='sidebar'] > [class*='root'] {
+  width: 100% !important;
+}
+
+/* Collapsed rail: zero the card padding so the 56px rail keeps its icon
+   geometry; the column's overflow clip hides the frozen wide root during
+   the collapse crossfade. */
+[data-dsh-prism] [data-sidebar-collapsed] [class*='sidebarCol'] {
+  margin: 10px;
+  padding: 0;
+  border-radius: 16px;
+}
+
+/* Header: a detached glass card whose bottom edge opens into the chat. */
+[data-dsh-prism] header {
+  margin: 12px 16px 0;
+  padding: 10px 16px 8px;
+  border: 1px solid rgb(19 45 83 / 0.26);
+  border-bottom-color: transparent;
+  border-radius: 20px;
+  background: var(--dsw-alias-bg-layer-2);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    0 10px 34px rgb(19 45 83 / 0.16);
+}
+
+[data-dsh-prism] header::after {
+  display: none;
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] header {
+  border-color: rgb(148 180 220 / 0.32);
+  border-bottom-color: transparent;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 8px 30px rgb(2 6 14 / 0.32);
+}
+
+/* Composer: the site-style glass recipe — 24px corners, bevel, soft drop. */
+[data-dsh-prism] [data-composer-card],
+[data-dsh-prism] [data-composer-card]::after {
+  border-radius: 24px;
+}
+
+[data-dsh-prism] [data-composer-card] {
+  position: relative;
+  z-index: 8;
+  border: 1px solid rgb(19 45 83 / 0.26);
+  /* One glass tone with the input itself: no tonal step between card and
+     textarea (the input-major token is the same glass recipe). */
+  background: var(--dsw-specific-input-major);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    0 10px 36px rgb(19 45 83 / 0.16);
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] [data-composer-card] {
+  border-color: rgb(148 180 220 / 0.32);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 10px 36px rgb(2 6 14 / 0.5);
+}
+
+/* Drop the composer seat's opaque slab so the aurora reaches the input row. */
+[data-dsh-prism] [data-phase] [class*='composerSeat'][class*='composerSeat'] {
+  background: none;
+}
+
+/* Trajectory takeover panel: the same glass recipe as the composer it
+   replaces, so the view reads as one piece with the conversation. */
+[data-dsh-prism] [data-conversation-composer-overlay] {
+  border: 1px solid rgb(19 45 83 / 0.26);
+  border-radius: 24px;
+  background: rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)));
+  backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
+  -webkit-backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    0 10px 36px rgb(19 45 83 / 0.16);
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] [data-conversation-composer-overlay] {
+  border-color: rgb(148 180 220 / 0.32);
+  background: rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 10px 36px rgb(2 6 14 / 0.5);
+}
+
+/* Inner chrome goes transparent so the panel reads as one glass piece. */
+[data-dsh-prism] [data-conversation-composer-overlay] [role='toolbar'] {
+  background: transparent;
+}
+
+/* Chat bubbles: glass with a backdrop blur so the aurora shimmers behind. */
+[data-dsh-prism] [class*='bubble'] {
+  border: 1px solid rgb(19 45 83 / 0.14);
+  border-radius: 14px;
+  background: var(--dsw-specific-bubble);
+}
+
+[data-dsh-prism] body[data-ds-dark-theme] [class*='bubble'] {
+  border-color: rgb(148 180 220 / 0.14);
+}
+
+/* Menus: frosted fill over the overlay-zone glass. */
+[data-dsh-prism] [role='menu'] {
+  background: var(--dsw-specific-menu);
+  border-radius: 14px;
+}
+
+/* Raised corners follow one scale: 14px surfaces, 10px buttons, 8px atoms. */
+[data-dsh-prism] [role='menu'],
+[data-dsh-prism] [class*='card'],
+[data-dsh-prism] [class*='panel'] {
+  border-radius: 14px;
+}
+
+[data-dsh-prism] button[class*='button'] {
+  border-radius: 10px;
+}
+
+[data-dsh-prism] [class*='iconButton'],
+[data-dsh-prism] [class*='searchButton'] {
+  border-radius: 8px;
+}
+
+/* ---------- Context-occupancy ring: the progress arc follows the theme
+   color instead of tertiary ink (whose mix can fall visually onto the track
+   stroke and read as "no progress"). Scoped to SVG circles so only the
+   meter's ring is affected. ---------- */
+
+[data-dsh-prism] svg circle[class*='track'] {
+  stroke: var(--dsw-alias-border-l3);
+}
+
+[data-dsh-prism] svg circle[class*='fill'] {
+  stroke: hsl(var(--prism-accent-h) var(--prism-accent-s) var(--prism-accent-l) / var(--prism-accent-a, 1));
+}
+
+/* ---------- Conversation landmarks: color, opacity, and preview material
+   ride their own knobs (the stock marker line used label-tertiary ink and
+   the preview lacked any frosted fill). ---------- */
+
+[data-dsh-prism] [class*='marker'] [class*='line'] {
+  background: hsl(var(--prism-accent-h) var(--prism-accent-s) var(--prism-accent-l) / var(--prism-accent-a, 1));
+}
+
+[data-dsh-prism] [class*='marker'][data-proximity='selected'] [class*='line'] {
+  filter: brightness(1.25);
+}
+
+/* The landmark preview popover gets the frosted glass it was missing. */
+[data-dsh-prism] [class*='rail'] [class*='preview'] {
+  backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
+  -webkit-backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
+}
+
+/* ---------- Ink protection and micro-interactions ---------- */
+
+/* A 1px halo at the glyph edges fakes "frost near the text". */
+[data-dsh-prism] [data-conversation-scroll] {
+  text-shadow: 0 0 1px rgb(0 0 0 / 0.35);
+}
+
+[data-dsh-prism] body:not([data-ds-dark-theme]) [data-conversation-scroll] {
+  text-shadow: 0 0 1px rgb(255 255 255 / 0.5), 0 1px 2px rgb(19 45 83 / 0.08);
+}
+
+[data-dsh-prism] :focus-visible {
+  outline: 2px solid hsl(var(--prism-accent-h) var(--prism-accent-s) var(--prism-accent-l));
+  outline-offset: 1px;
+}
+
+[data-dsh-prism] ::selection {
+  background: hsl(var(--prism-accent-h) var(--prism-accent-s) var(--prism-accent-l) / 0.35);
+}
+
+/* Buttons and menu cells answer with a soft accent ring. */
+[data-dsh-prism] button[class*='button']:hover:not(:disabled),
+[data-dsh-prism] [role='menuitem']:hover:not(:disabled) {
+  box-shadow:
+    0 0 12px hsl(var(--prism-accent-h) var(--prism-accent-s) var(--prism-accent-l) / 0.18),
+    inset 0 0 0 1px rgb(148 180 220 / 0.22);
+}
+
+/* ---------- Entrance motion (opacity-only; transform would re-anchor
+   fixed descendants mid-flight). Durations ride the motion knob. ---------- */
+
+[data-dsh-prism]:not([data-prism-still]) [data-phase='hero'],
+[data-dsh-prism]:not([data-prism-still]) [data-phase='active'] {
+  animation: prism-fade-in calc(0.32s / var(--prism-motion-scale, 1)) var(--ds-ease-in-out, ease-in-out);
+}
+
+[data-dsh-prism]:not([data-prism-still]) [role='dialog'] {
+  animation: prism-dialog-in calc(0.24s / var(--prism-motion-scale, 1)) var(--ds-ease-in-out, ease-in-out);
+}
+
+@keyframes prism-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes prism-dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+}
+
+/* ---------- Reduced motion: keep the static look, drop every effect. ---------- */
+
+[data-dsh-prism][data-prism-still] [data-prism-aurora],
+[data-dsh-prism][data-prism-still] [data-phase='hero'],
+[data-dsh-prism][data-prism-still] [data-phase='active'],
+[data-dsh-prism][data-prism-still] [role='dialog'] {
+  animation: none;
+}
+
+/* GIFs cannot be paused by CSS: hide the wallpaper under reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  [data-dsh-prism] [data-prism-aurora],
+  [data-dsh-prism] [data-phase='hero'],
+  [data-dsh-prism] [data-phase='active'],
+  [data-dsh-prism] [role='dialog'] {
+    animation: none;
+  }
+
+  [data-dsh-prism] [data-prism-wallpaper] {
+    display: none;
+  }
+}
+
+/* ---------- Velvet material: matte fabric nap. The grain overlay (SVG
+   feTurbulence noise + a soft diagonal sheen) sits above the content with a
+   soft-light blend; the surfaces lose their crisp glass bevel for a soft
+   absorbing inner shadow, blur a touch deeper, and desaturate (the material
+   recipe already drops the saturation). ---------- */
+
+[data-prism-grain] {
+  display: none;
+}
+
+[data-dsh-prism][data-prism-material='velvet'] [data-prism-grain] {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: 0.4;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(115deg, rgb(255 255 255 / 0.05), transparent 45%, rgb(0 0 0 / 0.04) 90%);
+}
+
+[data-dsh-prism][data-prism-material='velvet'] [class*='sidebarCol'],
+[data-dsh-prism][data-prism-material='velvet'] header,
+[data-dsh-prism][data-prism-material='velvet'] [data-composer-card],
+[data-dsh-prism][data-prism-material='velvet'] [class*='bubble'],
+[data-dsh-prism][data-prism-material='velvet'] [data-conversation-composer-overlay] {
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 0.10),
+    inset 0 -1px 2px rgb(255 255 255 / 0.05),
+    0 10px 30px rgb(2 6 14 / 0.35);
+  backdrop-filter: blur(calc(var(--prism-blur, 18px) + 4px)) saturate(var(--prism-saturate, 130%));
+  -webkit-backdrop-filter: blur(calc(var(--prism-blur, 18px) + 4px)) saturate(var(--prism-saturate, 130%));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-dsh-prism] [data-prism-grain] {
+    display: none;
+  }
+}
