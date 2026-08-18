@@ -28,15 +28,14 @@ dsh plugin --profile web remove dsh-client-ui-prism
 ---
 ## Screenshots
 
-**Effects** — the glass materials, ambient backdrop, and themed conversation landmarks in action:
+**Effects** — the main surface under different glass treatments (workspace sidebar, hero screen, and composer):
 
 | Effect 1 | Effect 2 | Effect 3 |
 |---|---|---|
 | ![Effect 1](assets/shot-1.jpg) | ![Effect 2](assets/shot-2.jpg) | ![Effect 3](assets/shot-3.jpg) |
 
-**Settings UI** — the appearance panel: damped sliders, color controls, and wallpaper management:
+**Settings UI** — the appearance panel:
 
-| Settings 1 | Settings 2 |
+| Materials, zones, fonts, and colors | Theme color, wallpaper rotation, and presets |
 |---|---|
-| ![Settings 1](assets/shot-4.jpg) | ![Settings 2](assets/shot-5.jpg) |
-
+| ![Materials, zones, fonts, and colors](assets/shot-4.jpg) | ![Theme color, wallpaper rotation, and presets](assets/shot-5.jpg) |
