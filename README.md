@@ -26,6 +26,13 @@ dsh plugin --profile web remove dsh-client-ui-prism
 - Master toggle restores the stock UI exactly; settings persist in localStorage and sync across tabs
 
 ---
+## Screenshots
+
+| | | |
+|---|---|---|
+| ![Prism 1](assets/shot-1.jpg) | ![Prism 2](assets/shot-2.jpg) | ![Prism 3](assets/shot-3.jpg) |
+| ![Prism 4](assets/shot-4.jpg) | ![Prism 5](assets/shot-5.jpg) | |
+
 
 
 English | [中文](README.zh.md)

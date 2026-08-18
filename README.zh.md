@@ -26,6 +26,13 @@ dsh plugin --profile web remove dsh-client-ui-prism
 - 总开关一键还原原生界面；设置持久化于 localStorage 并跨标签页同步
 
 ---
+## 效果展示
+
+| | | |
+|---|---|---|
+| ![Prism 1](assets/shot-1.jpg) | ![Prism 2](assets/shot-2.jpg) | ![Prism 3](assets/shot-3.jpg) |
+| ![Prism 4](assets/shot-4.jpg) | ![Prism 5](assets/shot-5.jpg) | |
+
 
 
 [English](README.md) | 中文
