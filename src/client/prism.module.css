@@ -181,13 +181,17 @@
   width: 100% !important;
 }
 
-/* Collapsed rail: zero the card padding so the 56px rail keeps its icon
-   geometry; the column's overflow clip hides the frozen wide root during
-   the collapse crossfade. */
+/* Collapsed rail: the card degrades to a flush glass strip — no margins,
+   border, or radius — so the full 56px track reaches the 36x36 rail icons
+   (the rail root's own 10px side padding does the centering). Any inset
+   here squeezes the icon boxes and the column's overflow clip truncates
+   them. The clip still hides the frozen wide root during the crossfade. */
 [data-dsh-prism] [data-sidebar-collapsed] [class*='sidebarCol'] {
-  margin: 10px;
+  margin: 0;
   padding: 0;
-  border-radius: 16px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Header: a detached glass card whose bottom edge opens into the chat. */
