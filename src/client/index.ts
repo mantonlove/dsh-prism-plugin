@@ -99,8 +99,7 @@ export function apply(ctx: ClientContext): void {
   // Master switch card in the Plugins configurable tab.
   ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({
     name: 'settings.plugin.item',
-    id: 'prism',
-    order: 6,
+    key: 'prism',
     store: pluginStore,
     locale: NS,
     inject: pluginInjected,
