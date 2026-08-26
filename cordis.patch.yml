@@ -6,4 +6,4 @@
 # declaration marks it as a browser-roster entry).
 - insert:
     - id: ui-prism
-      name: 'dsh-client-ui-prism'
+      name: '@deepseek-ai/dsh-client-ui-prism'
