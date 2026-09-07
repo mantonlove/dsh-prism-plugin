@@ -4,7 +4,7 @@
  * picker. The damping itself lives in the layer — the slider writes targets,
  * the skin glides — so these controls stay dumb and testable.
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { hexToHsl, hslToHex } from './color.ts'
 import css from './PrismControls.module.css'
@@ -42,7 +42,9 @@ function valueFromPointer(clientX: number, rect: DOMRect, min: number, max: numb
 export function PrismSlider({ label, value, min, max, step, unit, onChange }: PrismSliderProps) {
   const trackRef = useRef<HTMLDivElement | null>(null)
   const draggingRef = useRef(false)
+  const labelId = useId()
   const ratio = max === min ? 0 : (value - min) / (max - min)
+  const displayedValue = Math.round(value * 10) / 10
 
   const commit = useCallback((clientX: number) => {
     const track = trackRef.current
@@ -103,17 +105,17 @@ export function PrismSlider({ label, value, min, max, step, unit, onChange }: Pr
 
   return (
     <div className={css.sliderRow}>
-      <span className={css.sliderLabel} id={`prism-slider-label-${label}`}>{label}</span>
+      <span className={css.sliderLabel} id={labelId}>{label}</span>
       <div
         ref={trackRef}
         role="slider"
         tabIndex={0}
         className={css.sliderTrack}
-        aria-label={label}
-        aria-labelledby={`prism-slider-label-${label}`}
+        aria-labelledby={labelId}
         aria-valuemin={min}
         aria-valuemax={max}
-        aria-valuenow={Math.round(value * 10) / 10}
+        aria-valuenow={displayedValue}
+        aria-valuetext={unit === undefined || unit === '' ? undefined : `${String(displayedValue)}${unit}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -124,7 +126,7 @@ export function PrismSlider({ label, value, min, max, step, unit, onChange }: Pr
       </div>
       {unit !== undefined && unit !== '' && (
         <span className={css.sliderReadout}>
-          {String(Math.round(value * 10) / 10)}
+          {String(displayedValue)}
           {unit}
         </span>
       )}
@@ -191,20 +193,22 @@ export interface GroupProps {
  */
 export function Group({ title, defaultOpen = false, children }: GroupProps) {
   const [open, setOpen] = useState(defaultOpen)
+  const bodyId = useId()
   return (
     <div className={css.group}>
       <button
         type="button"
         className={css.groupToggle}
         aria-expanded={open}
-        onClick={() => { setOpen(!open) }}
+        aria-controls={bodyId}
+        onClick={() => { setOpen(value => !value) }}
       >
         <span className={css.groupTitle}>{title}</span>
         <span className={open ? css.groupChevronOpen : css.groupChevron} aria-hidden="true">
           <IconChevronDownOutline14 />
         </span>
       </button>
-      {open && <div className={css.groupBody}>{children}</div>}
+      {open && <div className={css.groupBody} id={bodyId}>{children}</div>}
     </div>
   )
 }
@@ -213,6 +217,12 @@ export function Group({ title, defaultOpen = false, children }: GroupProps) {
 export interface ColorControlProps {
   /** Row label. */
   label: string
+  /** Localized suffix that distinguishes the text field for assistive technology. */
+  hexLabel: string
+  /** Localized suffix that distinguishes the native picker for assistive technology. */
+  pickerLabel: string
+  /** Localized hex-input placeholder. */
+  placeholder: string
   /** Current hue, degrees. */
   hue: number
   /** Current saturation, 0-100. */
@@ -239,7 +249,7 @@ function parseHexInput(raw: string): string | null {
  * @param props - color control props.
  * @returns the color control row.
  */
-export function ColorControl({ label, hue, sat, light, onChange }: ColorControlProps) {
+export function ColorControl({ label, hexLabel, pickerLabel, placeholder, hue, sat, light, onChange }: ColorControlProps) {
   const hex = hslToHex({ h: hue, s: sat, l: light })
   const [text, setText] = useState(hex)
 
@@ -278,14 +288,14 @@ export function ColorControl({ label, hue, sat, light, onChange }: ColorControlP
 
   return (
     <div className={css.colorRow}>
-      <span className={css.sliderLabel} id={`prism-color-label-${label}`}>{label}</span>
+      <span className={css.sliderLabel}>{label}</span>
       <input
         type="text"
         className={css.colorHex}
         value={text}
-        aria-label={label}
+        aria-label={`${label} · ${hexLabel}`}
         spellCheck={false}
-        placeholder="#rrggbb"
+        placeholder={placeholder}
         onChange={onText}
         onBlur={onBlur}
       />
@@ -293,7 +303,7 @@ export function ColorControl({ label, hue, sat, light, onChange }: ColorControlP
         type="color"
         className={css.colorInput}
         value={hex}
-        aria-label={label}
+        aria-label={`${label} · ${pickerLabel}`}
         onChange={onSwatch}
       />
     </div>

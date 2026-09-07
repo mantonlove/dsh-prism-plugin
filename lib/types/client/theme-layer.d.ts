@@ -1,4 +1,4 @@
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client';
+import type { Context as ClientContext } from '@deepseek-ai/cordis';
 import { type WallpaperError } from './wallpaper.ts';
 import { type PrismPreset, type PrismSettings, type PrismZones } from './prism-settings.ts';
 /** html attribute selecting the Prism layer (all CSS hooks are gated on it). */

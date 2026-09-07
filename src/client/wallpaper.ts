@@ -42,8 +42,13 @@ export async function readWallpaper(file: File): Promise<string | WallpaperError
   if (file.size > MAX_WALLPAPER_BYTES) return { kind: 'size', bytes: file.size }
   const raw = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => { resolve(String(reader.result)) }
-    reader.onerror = () => { reject(reader.error) }
+    reader.onload = () => {
+      const result = reader.result
+      resolve(typeof result === 'string' ? result : '')
+    }
+    reader.onerror = () => {
+      reject(new Error(reader.error?.message ?? 'FileReader failed to read the wallpaper file', { cause: reader.error }))
+    }
     reader.readAsDataURL(file)
   }).catch(() => null)
   if (raw === null) return { kind: 'read' }

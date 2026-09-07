@@ -28,7 +28,12 @@ export declare const zh: {
     'prism.fontSerif': string;
     'prism.fontMono': string;
     'prism.fontCustom': string;
+    'prism.customFontLabel': string;
     'prism.customFontPlaceholder': string;
+    'prism.colors': string;
+    'prism.colorPlaceholder': string;
+    'prism.colorHexLabel': string;
+    'prism.colorPickerLabel': string;
     'prism.inkHue': string;
     'prism.inkDarkHue': string;
     'prism.accentHue': string;
@@ -49,6 +54,7 @@ export declare const zh: {
     'prism.wallpaperMode': string;
     'prism.wallpaperFixed': string;
     'prism.wallpaperLoop': string;
+    'prism.wallpaperPin': string;
     'prism.wallpaperPinHint': string;
     'prism.wallpaperIntervalHint': string;
     'prism.wallpaperBlur': string;
@@ -100,7 +106,12 @@ export declare const en: {
     'prism.fontSerif': string;
     'prism.fontMono': string;
     'prism.fontCustom': string;
+    'prism.customFontLabel': string;
     'prism.customFontPlaceholder': string;
+    'prism.colors': string;
+    'prism.colorPlaceholder': string;
+    'prism.colorHexLabel': string;
+    'prism.colorPickerLabel': string;
     'prism.inkHue': string;
     'prism.inkDarkHue': string;
     'prism.accentHue': string;
@@ -121,6 +132,7 @@ export declare const en: {
     'prism.wallpaperMode': string;
     'prism.wallpaperFixed': string;
     'prism.wallpaperLoop': string;
+    'prism.wallpaperPin': string;
     'prism.wallpaperPinHint': string;
     'prism.wallpaperIntervalHint': string;
     'prism.wallpaperBlur': string;

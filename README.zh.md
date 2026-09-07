@@ -4,7 +4,7 @@
 
 ## 安装
 
-需要 DeepSeek Harness `0.1.1-rc.2` 或更高版本（web profile），从 GitHub 源码安装：
+需要 DeepSeek Harness `0.1.2-alpha.1` 或更高版本（web profile；已适配 0.1.2 客户端布局：`dsh-client-store` + `dsh-client-ui-renderer` 取代 `dsh-client-runtime`），从 GitHub 源码安装：
 
 ```sh
 dsh plugin --profile web add github:mantonlove/dsh-prism-plugin

@@ -9,8 +9,9 @@
  * One click on the master switch returns the stock UI (every layer is an
  * effect, disposed on flip).
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 // Type-only: pulls the `settings.plugin.item` SlotMap merge.
 import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
 // Type-only: pulls the `settings.general.item` SlotMap merge.
@@ -77,9 +78,15 @@ export function apply(ctx: ClientContext): void {
         patch[zone] = value
         layer.update({ zones: patch })
       },
-      setInkLightColor: (inkLightHue: number, inkLightSat: number, inkLightLight: number) => { layer.update({ inkLightHue, inkLightSat, inkLightLight }) },
-      setInkDarkColor: (inkDarkHue: number, inkDarkSat: number, inkDarkLight: number) => { layer.update({ inkDarkHue, inkDarkSat, inkDarkLight }) },
-      setAccentColor: (accentHue: number, accentSat: number, accentLight: number) => { layer.update({ accentHue, accentSat, accentLight }) },
+      setInkLightColor: (inkLightHue: number, inkLightSat: number, inkLightLight: number) => {
+        layer.update({ inkLightHue, inkLightSat, inkLightLight })
+      },
+      setInkDarkColor: (inkDarkHue: number, inkDarkSat: number, inkDarkLight: number) => {
+        layer.update({ inkDarkHue, inkDarkSat, inkDarkLight })
+      },
+      setAccentColor: (accentHue: number, accentSat: number, accentLight: number) => {
+        layer.update({ accentHue, accentSat, accentLight })
+      },
       setBgColor: (bgHue: number, bgSat: number, bgLight: number) => { layer.update({ bgHue, bgSat, bgLight }) },
       setAccentOpacity: (accentOpacity: number) => { layer.update({ accentOpacity }) },
       setMotion: (motion: number) => { layer.update({ motion }) },

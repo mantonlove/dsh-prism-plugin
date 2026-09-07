@@ -4,7 +4,7 @@ A standalone distribution of `@deepseek-ai/dsh-client-ui-prism` for [DeepSeek Ha
 
 ## Install
 
-Requires DeepSeek Harness `0.1.1-rc.2` or later with the web profile. From the GitHub source:
+Requires DeepSeek Harness `0.1.2-alpha.1` or later with the web profile (adapted for the 0.1.2 client layout: `dsh-client-store` + `dsh-client-ui-renderer` replace `dsh-client-runtime`). From the GitHub source:
 
 ```sh
 dsh plugin --profile web add github:mantonlove/dsh-prism-plugin

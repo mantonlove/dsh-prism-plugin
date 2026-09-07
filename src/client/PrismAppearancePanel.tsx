@@ -19,6 +19,11 @@ import type { PrismFontChoice, PrismMaterial, PrismPreset, PrismZones } from './
 import type { WallpaperError } from './wallpaper.ts'
 import css from './PrismAppearancePanel.module.css'
 
+interface WallpaperErrorState {
+  scheme: 'dark' | 'light'
+  message: string
+}
+
 /** Injected business face: every knob write except the master switch. */
 export interface PrismAppearanceInjected {
   /** Set the glass material preset. */
@@ -130,7 +135,7 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
   const wallpaperBlur = useStore(s => s.wallpaperBlur)
   const wallpaperFrost = useStore(s => s.wallpaperFrost)
   const dark = useStore(s => s.dark)
-  const [wallpaperError, setWallpaperError] = useState<string>(t('prism.errorNone'))
+  const [wallpaperError, setWallpaperError] = useState<WallpaperErrorState | null>(null)
   const [managing, setManaging] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
   const schemeRef = useRef<'dark' | 'light'>('dark')
@@ -146,54 +151,68 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (file === undefined) return
-    const error = await pickWallpaper(schemeRef.current, file)
-    setWallpaperError(error === null ? t('prism.errorNone') : wallpaperErrorText(t as (key: string) => string, error))
+    const scheme = schemeRef.current
+    const error = await pickWallpaper(scheme, file)
+    setWallpaperError(error === null
+      ? null
+      : { scheme, message: wallpaperErrorText(t as (key: string) => string, error) })
   }
 
   const wallpaperRows = (scheme: 'dark' | 'light', urls: string[], labelKey: PrismLocaleKey) => {
     const pinned = scheme === 'dark' ? wallpaperPinnedDark : wallpaperPinnedLight
     return (
       <div className={css.wallpaperList} key={scheme}>
-        <span className={css.wallpaperScheme}>{t(labelKey)}</span>
-        {urls.map((url, index) => (
-          <div className={css.wallpaperRow} key={`${scheme}-${String(index)}`}>
-            <button
-              type="button"
-              className={!wallpaperLoop && pinned === index ? css.wallpaperThumbActive : css.wallpaperThumbButton}
-              aria-pressed={!wallpaperLoop && pinned === index}
-              title={t('prism.wallpaperPinHint')}
-              onClick={() => { pinWallpaper(scheme, index) }}
-            >
-              <img className={css.wallpaperThumb} src={url} alt="" />
-              {managing && (
-                <span className={css.wallpaperDeleteBadge} aria-hidden="true">✕</span>
-              )}
-            </button>
-            {managing && (
-              <button type="button" className={css.wallpaperDelete} onClick={() => { clearWallpaper(scheme, index) }}>
-                {t('prism.deleteWallpaper')}
-              </button>
-            )}
+        <div className={css.wallpaperHeader}>
+          <span className={css.wallpaperScheme}>{t(labelKey)}</span>
+          <button
+            type="button"
+            className={css.wallpaperButton}
+            aria-label={`${t('prism.chooseImage')} · ${t(labelKey)}`}
+            onClick={() => { startPick(scheme) }}
+          >
+            {t('prism.chooseImage')}
+          </button>
+        </div>
+        {urls.length > 0 && (
+          <div className={css.wallpaperItems}>
+            {urls.map((url, index) => (
+              <div className={css.wallpaperRow} key={`${scheme}-${String(index)}`}>
+                <button
+                  type="button"
+                  className={!wallpaperLoop && pinned === index ? css.wallpaperThumbActive : css.wallpaperThumbButton}
+                  aria-label={`${t('prism.wallpaperPin')} · ${t(labelKey)} ${String(index + 1)}`}
+                  aria-pressed={!wallpaperLoop && pinned === index}
+                  title={t('prism.wallpaperPinHint')}
+                  onClick={() => { pinWallpaper(scheme, index) }}
+                >
+                  <img className={css.wallpaperThumb} src={url} alt="" />
+                </button>
+                {managing && (
+                  <button
+                    type="button"
+                    className={css.wallpaperDelete}
+                    aria-label={`${t('prism.deleteWallpaper')} · ${t(labelKey)} ${String(index + 1)}`}
+                    onClick={() => { clearWallpaper(scheme, index) }}
+                  >
+                    {t('prism.deleteWallpaper')}
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
-        <button type="button" className={css.wallpaperButton} onClick={() => { startPick(scheme) }}>
-          {t('prism.chooseImage')}
-        </button>
-        <button
-          type="button"
-          className={css.wallpaperButton}
-          aria-pressed={managing}
-          onClick={() => { setManaging(!managing) }}
-        >
-          {managing ? t('prism.manageDone') : t('prism.manage')}
-        </button>
+        )}
+        {wallpaperError?.scheme === scheme && (
+          <div className={css.error} role="alert">
+            {wallpaperError.message}
+          </div>
+        )}
       </div>
     )
   }
 
   return (
     <div className={css.panel}>
-      <Group title={t('prism.material')}>
+      <Group title={t('prism.material')} defaultOpen>
         <Segmented
           label={t('prism.material')}
           value={material}
@@ -210,13 +229,25 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
         <div className={css.hint}>{dark ? t('prism.brightnessHintDark') : t('prism.brightnessHintLight')}</div>
       </Group>
 
+      <Group title={t('prism.colors')} defaultOpen>
+        <div className={css.colorGrid}>
+          <ColorControl label={t('prism.accentHue')} hexLabel={t('prism.colorHexLabel')} pickerLabel={t('prism.colorPickerLabel')} placeholder={t('prism.colorPlaceholder')} hue={accentHue} sat={accentSat} light={accentLight} onChange={(h, s, l) => { setAccentColor(h, s, l) }} />
+          <ColorControl label={t('prism.inkHue')} hexLabel={t('prism.colorHexLabel')} pickerLabel={t('prism.colorPickerLabel')} placeholder={t('prism.colorPlaceholder')} hue={inkLightHue} sat={inkLightSat} light={inkLightLight} onChange={(h, s, l) => { setInkLightColor(h, s, l) }} />
+          <ColorControl label={t('prism.inkDarkHue')} hexLabel={t('prism.colorHexLabel')} pickerLabel={t('prism.colorPickerLabel')} placeholder={t('prism.colorPlaceholder')} hue={inkDarkHue} sat={inkDarkSat} light={inkDarkLight} onChange={(h, s, l) => { setInkDarkColor(h, s, l) }} />
+        </div>
+        <PrismSlider label={t('prism.accentOpacity')} value={accentOpacity} min={0} max={100} step={1} unit="%" onChange={setAccentOpacity} />
+        <div className={css.hint}>{t('prism.accentHint')}</div>
+      </Group>
+
       <Group title={t('prism.zones')}>
-        <PrismSlider label={t('prism.zoneBase')} value={zones.base} min={20} max={100} step={1} unit="%" onChange={next => { setZone('base', next) }} />
-        <PrismSlider label={t('prism.zoneSidebar')} value={zones.sidebar} min={20} max={100} step={1} unit="%" onChange={next => { setZone('sidebar', next) }} />
-        <PrismSlider label={t('prism.zoneCard')} value={zones.card} min={20} max={100} step={1} unit="%" onChange={next => { setZone('card', next) }} />
-        <PrismSlider label={t('prism.zoneInput')} value={zones.input} min={20} max={100} step={1} unit="%" onChange={next => { setZone('input', next) }} />
-        <PrismSlider label={t('prism.zoneOverlay')} value={zones.overlay} min={20} max={100} step={1} unit="%" onChange={next => { setZone('overlay', next) }} />
-        <PrismSlider label={t('prism.zoneBubble')} value={zones.bubble} min={20} max={100} step={1} unit="%" onChange={next => { setZone('bubble', next) }} />
+        <div className={css.zoneGrid}>
+          <PrismSlider label={t('prism.zoneBase')} value={zones.base} min={20} max={100} step={1} unit="%" onChange={(next) => { setZone('base', next) }} />
+          <PrismSlider label={t('prism.zoneSidebar')} value={zones.sidebar} min={20} max={100} step={1} unit="%" onChange={(next) => { setZone('sidebar', next) }} />
+          <PrismSlider label={t('prism.zoneCard')} value={zones.card} min={20} max={100} step={1} unit="%" onChange={(next) => { setZone('card', next) }} />
+          <PrismSlider label={t('prism.zoneInput')} value={zones.input} min={20} max={100} step={1} unit="%" onChange={(next) => { setZone('input', next) }} />
+          <PrismSlider label={t('prism.zoneOverlay')} value={zones.overlay} min={20} max={100} step={1} unit="%" onChange={(next) => { setZone('overlay', next) }} />
+          <PrismSlider label={t('prism.zoneBubble')} value={zones.bubble} min={20} max={100} step={1} unit="%" onChange={(next) => { setZone('bubble', next) }} />
+        </div>
       </Group>
 
       <Group title={t('prism.font')}>
@@ -237,22 +268,15 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
             className={css.customFont}
             type="text"
             value={customFont}
+            aria-label={t('prism.customFontLabel')}
             placeholder={t('prism.customFontPlaceholder')}
-            onChange={event => { setCustomFont(event.target.value) }}
+            onChange={(event) => { setCustomFont(event.target.value) }}
           />
         )}
         <PrismSlider label={t('prism.fontSize')} value={fontScale} min={85} max={120} step={1} unit="%" onChange={setFontScale} />
-        <ColorControl label={t('prism.inkHue')} hue={inkLightHue} sat={inkLightSat} light={inkLightLight} onChange={(h, s, l) => { setInkLightColor(h, s, l) }} />
-        <ColorControl label={t('prism.inkDarkHue')} hue={inkDarkHue} sat={inkDarkSat} light={inkDarkLight} onChange={(h, s, l) => { setInkDarkColor(h, s, l) }} />
       </Group>
 
-      <Group title={t('prism.accentHue')}>
-        <ColorControl label={t('prism.accentHue')} hue={accentHue} sat={accentSat} light={accentLight} onChange={(h, s, l) => { setAccentColor(h, s, l) }} />
-        <PrismSlider label={t('prism.accentOpacity')} value={accentOpacity} min={0} max={100} step={1} unit="%" onChange={setAccentOpacity} />
-        <div className={css.hint}>{t('prism.accentHint')}</div>
-      </Group>
-
-      <Group title={t('prism.background')}>
+      <Group title={t('prism.background')} defaultOpen={background === 'wallpaper'}>
         <Segmented
           label={t('prism.background')}
           value={background}
@@ -264,7 +288,7 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
         />
         {background === 'aurora' && (
           <>
-            <ColorControl label={t('prism.bgHue')} hue={bgHue} sat={bgSat} light={bgLight} onChange={(h, s, l) => { setBgColor(h, s, l) }} />
+            <ColorControl label={t('prism.bgHue')} hexLabel={t('prism.colorHexLabel')} pickerLabel={t('prism.colorPickerLabel')} placeholder={t('prism.colorPlaceholder')} hue={bgHue} sat={bgSat} light={bgLight} onChange={(h, s, l) => { setBgColor(h, s, l) }} />
             <PrismSlider label={t('prism.motion')} value={motion} min={0} max={100} step={1} unit="%" onChange={setMotion} />
           </>
         )}
@@ -272,11 +296,21 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
           <>
             {wallpaperRows('dark', wallpaperDark, 'prism.wallpaperDark')}
             {wallpaperRows('light', wallpaperLight, 'prism.wallpaperLight')}
+            <div className={css.wallpaperToolbar}>
+              <button
+                type="button"
+                className={css.wallpaperButton}
+                aria-pressed={managing}
+                onClick={() => { setManaging(value => !value) }}
+              >
+                {managing ? t('prism.manageDone') : t('prism.manage')}
+              </button>
+            </div>
             <div className={css.hint}>{t('prism.wallpaperPinHint')}</div>
             <Segmented
               label={t('prism.wallpaperMode')}
               value={wallpaperLoop ? 'loop' : 'fixed'}
-              onSelect={value => { setWallpaperLoop(value === 'loop') }}
+              onSelect={(value) => { setWallpaperLoop(value === 'loop') }}
               options={[
                 { id: 'fixed', label: t('prism.wallpaperFixed') },
                 { id: 'loop', label: t('prism.wallpaperLoop') },
@@ -291,7 +325,6 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
             <PrismSlider label={t('prism.wallpaperBlur')} value={wallpaperBlur} min={0} max={100} step={1} unit="%" onChange={setWallpaperBlur} />
             <PrismSlider label={t('prism.wallpaperFrost')} value={wallpaperFrost} min={0} max={100} step={1} unit="%" onChange={setWallpaperFrost} />
             <div className={css.hint}>{t('prism.wallpaperHint')}</div>
-            {wallpaperError !== '' && <div className={css.error}>{wallpaperError}</div>}
           </>
         )}
       </Group>
@@ -318,7 +351,7 @@ export function PrismAppearancePanel(props: PrismAppearancePanelProps) {
         className={css.fileInput}
         type="file"
         accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
-        onChange={event => { void onFile(event) }}
+        onChange={(event) => { void onFile(event) }}
       />
     </div>
   )

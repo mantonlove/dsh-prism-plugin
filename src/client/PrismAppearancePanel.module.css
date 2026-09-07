@@ -3,38 +3,40 @@
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 0 4px;
+  width: 100%;
+  min-width: 0;
+  padding: 16px 0;
+  box-sizing: border-box;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l2);
+  container: prism-panel / inline-size;
 }
 
-.caption {
-  margin: 8px 0 2px;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  line-height: 16px;
-  text-transform: uppercase;
+.panel > :first-child {
+  border-top: 0;
 }
 
 .hint {
   color: var(--dsw-alias-label-caption);
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .error {
   color: var(--dsw-alias-state-error-primary);
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .customFont {
-  border: 1px solid var(--dsw-alias-border-l2);
+  width: 100%;
+  min-width: 0;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  border: 0.5px solid var(--dsw-alias-border-l4);
   border-radius: 8px;
   background: var(--dsw-alias-bg-base);
   color: var(--dsw-alias-label-primary);
-  padding: 6px 10px;
+  font: inherit;
   font-size: 13px;
   line-height: 20px;
   outline: none;
@@ -45,22 +47,29 @@
   outline-offset: 1px;
 }
 
-.wallpaperRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.zoneGrid,
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  min-width: 0;
+}
+
+.colorGrid > :first-child {
+  grid-column: 1 / -1;
 }
 
 .wallpaperButton,
 .wallpaperDelete,
 .presetButton,
 .resetButton {
-  border: 1px solid var(--dsw-alias-border-l2);
+  box-sizing: border-box;
+  border: 0.5px solid var(--dsw-alias-border-l4);
   border-radius: 8px;
   background: var(--dsw-alias-bg-base);
   color: var(--dsw-alias-label-secondary);
   padding: 4px 10px;
+  font: inherit;
   font-size: 12px;
   line-height: 18px;
   cursor: pointer;
@@ -83,47 +92,37 @@
 }
 
 .wallpaperDelete {
+  width: 100%;
+  padding: 2px 6px;
   color: var(--dsw-alias-state-error-primary);
+  font-size: 11px;
+  line-height: 16px;
 }
 
 .wallpaperThumb {
-  width: 72px;
-  height: 40px;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 6px;
 }
 
 .wallpaperThumbButton,
 .wallpaperThumbActive {
   position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
   padding: 0;
-  border: none;
-  background: transparent;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-base);
   cursor: pointer;
-  border-radius: 6px;
-}
-
-.wallpaperDeleteBadge {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 6px;
-  background: rgb(0 0 0 / 0.45);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  pointer-events: none;
-}
-
-.wallpaperThumbButton {
-  border: 1px solid var(--dsw-alias-border-l3);
 }
 
 .wallpaperThumbActive {
   outline: 2px solid var(--dsw-alias-state-business-primary);
   outline-offset: 1px;
-  border: 1px solid var(--dsw-alias-border-l3);
 }
 
 .wallpaperThumbButton:focus-visible,
@@ -133,16 +132,10 @@
 }
 
 .presetRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   width: 100%;
-}
-
-.presetRow .presetButton,
-.presetRow .resetButton {
-  flex: 1 1 0;
-  min-width: 0;
-  text-align: center;
 }
 
 .resetButton {
@@ -156,20 +149,65 @@
 
 .wallpaperList {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-module-platform);
+}
+
+.wallpaperHeader,
+.wallpaperToolbar {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
 .wallpaperScheme {
-  flex-basis: 100%;
+  min-width: 0;
   color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.wallpaperItems {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
 }
 
 .wallpaperRow {
-  flex: none;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
+.wallpaperToolbar {
+  justify-content: flex-end;
+}
+
+@container prism-panel (max-width: 500px) {
+  .zoneGrid,
+  .colorGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .colorGrid > :first-child {
+    grid-column: auto;
+  }
+}
+
+@container prism-panel (max-width: 360px) {
+  .wallpaperHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .presetRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

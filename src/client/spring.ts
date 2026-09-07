@@ -78,6 +78,6 @@ export function springSettled(state: SpringState, target: number): boolean {
  * @returns the clamped value.
  */
 export function clampValue(value: number, min: number, max: number, fallback: number): number {
-  const n = Number(value)
+  const n = value
   return Math.min(max, Math.max(min, Number.isFinite(n) ? n : fallback))
 }

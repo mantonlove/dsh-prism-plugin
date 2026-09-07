@@ -17,7 +17,7 @@
  * a timer re-evaluates at each rotation boundary and crossfades the image.
  */
 import type { Context } from '@deepseek-ai/cordis'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { ThemeTokenOverrides } from '@deepseek-ai/dsh-client-ui-theme/client'
 // Type-only: keeps the client bundle types aligned with the locale merge.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
@@ -156,7 +156,12 @@ export class PrismLayer {
 
   /** Current knob document (the settings rows mirror this). */
   getSettings(): PrismSettings {
-    return { ...this.settings, zones: { ...this.settings.zones }, wallpaperDark: [...this.settings.wallpaperDark], wallpaperLight: [...this.settings.wallpaperLight] }
+    return {
+      ...this.settings,
+      zones: { ...this.settings.zones },
+      wallpaperDark: [...this.settings.wallpaperDark],
+      wallpaperLight: [...this.settings.wallpaperLight],
+    }
   }
 
   /** Whether the resolved palette is dark (brightness knob darkens). */
@@ -452,7 +457,7 @@ export class PrismLayer {
     const target = this.knobTarget(key)
     let knob = this.knobs.get(key)
     if (knob === undefined) {
-      knob = { spring: createSpring(target), target, apply: value => this.writeKnobVar(key, value) }
+      knob = { spring: createSpring(target), target, apply: (value) => { this.writeKnobVar(key, value) } }
       this.knobs.set(key, knob)
     }
     knob.target = target
@@ -554,7 +559,9 @@ export class PrismLayer {
       }
       case 'wallpaperFrost': {
         style.setProperty('--prism-wallpaper-frost', String(value / 100))
-        const dim = this.dark ? this.settings.wallpaperDimDark[this.wallpaperIndex(this.dark ? this.settings.wallpaperDark : this.settings.wallpaperLight)] ?? 0.5 : this.settings.wallpaperDimLight[this.wallpaperIndex(this.dark ? this.settings.wallpaperDark : this.settings.wallpaperLight)] ?? 0.5
+        const urls = this.dark ? this.settings.wallpaperDark : this.settings.wallpaperLight
+        const dims = this.dark ? this.settings.wallpaperDimDark : this.settings.wallpaperDimLight
+        const dim = dims[this.wallpaperIndex(urls)] ?? 0.5
         const veil = Math.min(0.75, veilAlpha(dim, this.dark) * 0.85 + (value / 100) * 0.6)
         style.setProperty('--prism-wall-veil', String(veil))
         return

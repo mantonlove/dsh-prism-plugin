@@ -4,7 +4,7 @@
  * read via props.useStore. One store per settings surface (plugin card and
  * general appearance panel).
  */
-import { type EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client';
+import { type EngineStoreHandle } from '@deepseek-ai/dsh-client-store';
 import type { PrismSettings } from './prism-settings.ts';
 /** Store state mirrored from the Prism layer. */
 export interface PrismRowState extends PrismSettings {

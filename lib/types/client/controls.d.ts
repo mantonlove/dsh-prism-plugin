@@ -64,6 +64,12 @@ export declare function Group({ title, defaultOpen, children }: GroupProps): imp
 export interface ColorControlProps {
     /** Row label. */
     label: string;
+    /** Localized suffix that distinguishes the text field for assistive technology. */
+    hexLabel: string;
+    /** Localized suffix that distinguishes the native picker for assistive technology. */
+    pickerLabel: string;
+    /** Localized hex-input placeholder. */
+    placeholder: string;
     /** Current hue, degrees. */
     hue: number;
     /** Current saturation, 0-100. */
@@ -79,5 +85,5 @@ export interface ColorControlProps {
  * @param props - color control props.
  * @returns the color control row.
  */
-export declare function ColorControl({ label, hue, sat, light, onChange }: ColorControlProps): import("react").JSX.Element;
+export declare function ColorControl({ label, hexLabel, pickerLabel, placeholder, hue, sat, light, onChange }: ColorControlProps): import("react").JSX.Element;
 //# sourceMappingURL=controls.d.ts.map

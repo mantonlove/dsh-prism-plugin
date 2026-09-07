@@ -13,7 +13,7 @@ export interface ColorHSL {
 
 /** Clamp a channel into [min, max] with a fallback. */
 function clampChannel(value: number, min: number, max: number, fallback: number): number {
-  const n = Number(value)
+  const n = value
   return Math.min(max, Math.max(min, Number.isFinite(n) ? n : fallback))
 }
 
