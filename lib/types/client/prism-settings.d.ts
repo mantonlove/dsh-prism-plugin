@@ -90,13 +90,32 @@ export interface PrismSettings {
     wallpaperBlur: number;
     /** Wallpaper frost veil, 0-100. */
     wallpaperFrost: number;
+    /** Portable user-created themes (wallpaper pixels and the master switch excluded). */
+    customThemes: PrismCustomTheme[];
 }
 /** Glass material presets (saturation + opacity-depth recipe). */
 export type PrismMaterial = 'clear' | 'frosted' | 'velvet';
 /** UI font choice ids. */
 export type PrismFontChoice = 'system' | 'rounded' | 'serif' | 'mono' | 'custom';
 /** Named whole-skin presets. */
-export type PrismPreset = 'night' | 'aurora' | 'crystal';
+export type PrismPreset = 'night' | 'aurora' | 'crystal' | 'dune' | 'rose' | 'forest';
+/** Maximum saved looks; reaching it never evicts an existing theme silently. */
+export declare const MAX_CUSTOM_THEMES = 24;
+/** Stable internal error message used to localize the saved-theme limit. */
+export declare const PRISM_THEME_LIMIT_ERROR = "prism-theme-limit";
+/** Stable error raised when a library edit cannot be durably persisted. */
+export declare const PRISM_THEME_PERSIST_ERROR = "prism-theme-persist-failed";
+/** Portable appearance values: no wallpaper bytes, rotation state, or master switch. */
+export type PrismThemeValues = Omit<PrismSettings, 'enabled' | 'customThemes' | 'background' | 'wallpaperDark' | 'wallpaperLight' | 'wallpaperDimDark' | 'wallpaperDimLight' | 'wallpaperInterval' | 'wallpaperLoop' | 'wallpaperPinnedDark' | 'wallpaperPinnedLight' | 'wallpaperBlur' | 'wallpaperFrost'>;
+/** One user-created theme stored alongside the durable settings document. */
+export interface PrismCustomTheme {
+    /** Stable local identifier. */
+    id: string;
+    /** User-visible name, trimmed and length-limited. */
+    name: string;
+    /** Portable appearance values. */
+    values: PrismThemeValues;
+}
 /** One material's recipe. */
 export interface MaterialRecipe {
     /** Backdrop saturation percent (velvet desaturates for a matte feel). */
@@ -120,10 +139,20 @@ export declare const SETTINGS_DEFAULTS: PrismSettings;
 export interface PresetRecipe {
     /** Accent hue. */
     accentHue: number;
+    /** Accent saturation, 0-100. */
+    accentSat: number;
+    /** Accent lightness, 0-100. */
+    accentLight: number;
     /** Backdrop hue. */
     bgHue: number;
+    /** Backdrop saturation, 0-100. */
+    bgSat: number;
+    /** Backdrop lightness, 0-100. */
+    bgLight: number;
     /** Glass material id. */
     material: PrismMaterial;
+    /** Backdrop blur, px. */
+    blur: number;
     /** Global frost, 0-100. */
     frost: number;
     /** Background brightness, 0-100. */
@@ -131,7 +160,8 @@ export interface PresetRecipe {
     /** Motion intensity, 0-100. */
     motion: number;
 }
-/** Curated whole-skin presets. */
+/** Curated whole-skin presets. Every recipe is intentionally complete: one
+ *  click changes a coherent palette and material rather than only the hue. */
 export declare const PRESETS: Readonly<Record<PrismPreset, PresetRecipe>>;
 /** Numeric knob ranges. */
 export declare const RANGES: Readonly<{
@@ -195,8 +225,10 @@ export declare const RANGES: Readonly<{
  * @returns the merged settings document.
  */
 export declare function readSettings(): PrismSettings;
-/** Persist the document (quota failures keep the in-memory state). */
-export declare function writeSettings(settings: PrismSettings): void;
+/** Persist the document.
+ * @returns false when serialization or localStorage (including quota) fails.
+ */
+export declare function writeSettings(settings: PrismSettings): boolean;
 /**
  * Whether a stored document is this plugin's own key (storage-event filter).
  * @param key - the StorageEvent key.

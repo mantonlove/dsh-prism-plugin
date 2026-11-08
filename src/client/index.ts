@@ -1,71 +1,41 @@
 /**
- * Prism client plugin body: the toggleable glassmorphism skin. Owns the
- * durable settings document, applies/retracts the theme layer through the
- * official theme override stack, and registers two settings surfaces:
- * - the master on/off card into the Plugins section (`settings.plugin.item`,
- *   same shape as the other plugin cards);
- * - every glass knob into the General section's appearance area
- *   (`settings.general.item`, right under 外观).
- * One click on the master switch returns the stock UI (every layer is an
- * effect, disposed on flip).
+ * Prism client plugin body. The official theme override stack owns visual
+ * state; the General → Appearance panel owns every control, including the
+ * master switch (DSH 0.2.2 removed the legacy settings.plugin.item slot).
+ * Disabling Prism retracts every override and returns the stock interface.
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-// Type-only: pulls the `settings.plugin.item` SlotMap merge.
-import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
-// Type-only: pulls the `settings.general.item` SlotMap merge.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
-import { PrismPluginCard, type PrismPluginCardInjected } from './PrismPluginCard.tsx'
 import { PrismAppearancePanel, type PrismAppearanceInjected } from './PrismAppearancePanel.tsx'
 import { createPrismRowStore, type PrismSettingsPayload } from './settings-store.ts'
 import { en, NS, zh } from './locales.ts'
 import { PrismLayer } from './theme-layer.ts'
 import type { PrismFontChoice, PrismMaterial, PrismPreset, PrismZones } from './prism-settings.ts'
-// Side-effect import: the theme-layer stylesheet (unloaded with the plugin bundle).
 import './prism.module.css'
 
-/** Required services: theme override stack plus the settings-card surfaces. */
 export const inject = ['theme', 'slots', 'locale']
 
-/**
- * Client plugin body.
- * @param ctx - client cordis context.
- */
+/** Register Prism's single settings surface and its reactive state bridge. */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-prism: settings dictionaries')
 
-  // Two store mirrors of the same layer state: one for the Plugins card
-  // (master switch) and one for the General section's appearance panel.
-  const pluginStore = createPrismRowStore()
   const appearanceStore = createPrismRowStore()
-  let pluginBound: BoundActions<typeof pluginStore> | undefined
   let appearanceBound: BoundActions<typeof appearanceStore> | undefined
   let revision = 0
-
   const layer = new PrismLayer(ctx, () => { sync() })
-  const payload = (): PrismSettingsPayload => ({ ...layer.getSettings(), dark: layer.getDark() })
   const sync = (): void => {
-    const next = payload()
-    pluginBound?.sync(next, revision)
-    appearanceBound?.sync(next, revision)
+    const payload: PrismSettingsPayload = { ...layer.getSettings(), dark: layer.getDark() }
+    appearanceBound?.sync(payload, revision)
     revision += 1
-  }
-
-  const pluginInjected = (actions: BoundActions<typeof pluginStore>): PrismPluginCardInjected => {
-    pluginBound = actions
-    sync()
-    return {
-      setEnabled: (enabled) => {
-        layer.setEnabled(enabled)
-      },
-    }
   }
 
   const appearanceInjected = (actions: BoundActions<typeof appearanceStore>): PrismAppearanceInjected => {
     appearanceBound = actions
     sync()
     return {
+      setEnabled: (enabled) => { layer.setEnabled(enabled) },
       setMaterial: (material: PrismMaterial) => { layer.update({ material }) },
       setBlur: (blur: number) => { layer.update({ blur }) },
       setFrost: (frost: number) => { layer.update({ frost }) },
@@ -73,11 +43,7 @@ export function apply(ctx: ClientContext): void {
       setFontScale: (fontScale: number) => { layer.update({ fontScale }) },
       setFontChoice: (fontChoice: PrismFontChoice) => { layer.update({ fontChoice }) },
       setCustomFont: (customFont: string) => { layer.update({ customFont }) },
-      setZone: (zone: keyof PrismZones, value: number) => {
-        const patch: Partial<PrismZones> = {}
-        patch[zone] = value
-        layer.update({ zones: patch })
-      },
+      setZone: (zone: keyof PrismZones, value: number) => { layer.update({ zones: { [zone]: value } }) },
       setInkLightColor: (inkLightHue: number, inkLightSat: number, inkLightLight: number) => {
         layer.update({ inkLightHue, inkLightSat, inkLightLight })
       },
@@ -99,20 +65,16 @@ export function apply(ctx: ClientContext): void {
       pickWallpaper: (scheme, file) => layer.setWallpaperFromFile(scheme, file),
       clearWallpaper: (scheme, index) => { layer.clearWallpaper(scheme, index) },
       applyPreset: (preset: PrismPreset) => { layer.applyPreset(preset) },
+      saveTheme: (name) => layer.saveTheme(name),
+      applyCustomTheme: (id) => { layer.applyCustomTheme(id) },
+      deleteCustomTheme: (id) => { layer.deleteCustomTheme(id) },
+      exportTheme: () => layer.exportTheme(),
+      importTheme: (raw) => layer.importTheme(raw),
+      resetZones: () => { layer.resetZones() },
       reset: () => { layer.reset() },
     }
   }
 
-  // Master switch card in the Plugins configurable tab.
-  ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({
-    name: 'settings.plugin.item',
-    key: 'prism',
-    store: pluginStore,
-    locale: NS,
-    inject: pluginInjected,
-  }, PrismPluginCard))
-
-  // Glass knobs panel in the General section, right under Appearance (10).
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
     name: 'settings.general.item',
     id: 'prism',

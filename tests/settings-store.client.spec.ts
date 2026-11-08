@@ -1,6 +1,8 @@
 /** Prism row store: snapshot mirror and the revision guard. */
 import { describe, expect, it } from 'vitest'
 import { createPrismRowStore, type PrismSettingsPayload } from '../src/client/settings-store.ts'
+import { SETTINGS_DEFAULTS } from '../src/client/prism-settings.ts'
+import { themeSnapshot } from '../src/client/theme-io.ts'
 
 function payload(overrides: Partial<PrismSettingsPayload> = {}): PrismSettingsPayload {
   return {
@@ -38,6 +40,7 @@ function payload(overrides: Partial<PrismSettingsPayload> = {}): PrismSettingsPa
     wallpaperPinnedLight: 0,
     wallpaperBlur: 20,
     wallpaperFrost: 0,
+    customThemes: [],
     dark: false,
     ...overrides,
   }
@@ -65,6 +68,16 @@ describe('createPrismRowStore', () => {
     store.actions.sync(payload({ frost: 30 }), 3)
     expect(store.getSnapshot().frost).toBe(10)
     expect(store.getSnapshot().revision).toBe(3)
+  })
+
+  it('copies custom themes and zones defensively', () => {
+    const store = createPrismRowStore().create()
+    const next = payload({ customThemes: [{ id: 'theme-one', name: 'One', values: themeSnapshot(SETTINGS_DEFAULTS) }] })
+    store.actions.sync(next, 1)
+    next.customThemes[0]!.values.zones.sidebar = 20
+    next.customThemes[0]!.name = 'Changed'
+    expect(store.getSnapshot().customThemes[0]?.name).toBe('One')
+    expect(store.getSnapshot().customThemes[0]?.values.zones.sidebar).toBe(100)
   })
 
   it('copies wallpaper lists defensively so drafts never alias the source payload', () => {

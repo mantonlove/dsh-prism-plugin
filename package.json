@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-prism",
-  "description": "Prism: a glassmorphism theme layer for the Web surface — adjustable blur, frost, six per-zone glass opacities, damped knobs, font scale/family, accent and backdrop hue, animated aurora or photo/GIF wallpaper",
-  "version": "1.0.2",
+  "description": "Prism: a glassmorphism studio for the DSH Web GUI with six presets, portable custom themes, adjustable glass, typography, accent colors, aurora, and photo/GIF wallpapers",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -10,6 +10,8 @@
     "url": "git+https://github.com/mantonlove/dsh-prism-plugin.git"
   },
   "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "icon": "assets/icon-180.png",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
   "exports": {
@@ -37,7 +39,6 @@
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-theme",
         "@deepseek-ai/dsh-client-ui-settings",
-        "@deepseek-ai/dsh-client-ui-settings-plugins",
         "@deepseek-ai/dsh-client-ui-renderer"
       ],
       "platform": "web"
@@ -45,44 +46,55 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-locale": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-store": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-renderer": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-settings": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-settings-plugins": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-slots": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-theme": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-invariants": "^0.1.2-alpha.1",
+    "@deepseek-ai/cordis": "^4.0.1-rc.4",
+    "@deepseek-ai/dsh-client-locale": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-store": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-renderer": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-settings": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-theme": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-invariants": "^0.2.0-rc.2",
     "react": "^18.2.0"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-locale": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-store": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-renderer": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-settings": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-settings-plugins": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-slots": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-client-ui-theme": "^0.1.2-alpha.1",
-    "@deepseek-ai/dsh-invariants": "^0.1.2-alpha.1",
+    "@deepseek-ai/cordis": "4.1.0",
+    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-store": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-theme": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-invariants": "0.2.0-rc.2",
+    "@types/node": "^22.20.0",
     "@types/react": "~18.3.1",
-    "react": "^18.2.0"
+    "@types/react-dom": "~18.3.0",
+    "immer": "^10.1.1",
+    "jsdom": "^26.0.0",
+    "lightningcss": "^1.32.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsdown": "^0.22.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "zustand": "~4.5.7"
   },
   "files": [
     "lib/index.js",
     "lib/invariant.js",
     "lib/client.js",
     "lib/types/**/*.d.ts",
+    "assets/icon-180.png",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",
     "LICENSE"
   ],
   "scripts": {
-    "bundle": "tsdown",
-    "watch": "tsdown --watch"
+    "bundle": "tsdown && tsc -p tsconfig.types.json",
+    "watch": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
   }
 }

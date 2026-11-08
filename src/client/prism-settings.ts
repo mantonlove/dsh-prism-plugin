@@ -92,6 +92,8 @@ export interface PrismSettings {
   wallpaperBlur: number
   /** Wallpaper frost veil, 0-100. */
   wallpaperFrost: number
+  /** Portable user-created themes (wallpaper pixels and the master switch excluded). */
+  customThemes: PrismCustomTheme[]
 }
 
 /** Glass material presets (saturation + opacity-depth recipe). */
@@ -101,7 +103,31 @@ export type PrismMaterial = 'clear' | 'frosted' | 'velvet'
 export type PrismFontChoice = 'system' | 'rounded' | 'serif' | 'mono' | 'custom'
 
 /** Named whole-skin presets. */
-export type PrismPreset = 'night' | 'aurora' | 'crystal'
+export type PrismPreset = 'night' | 'aurora' | 'crystal' | 'dune' | 'rose' | 'forest'
+
+/** Maximum saved looks; reaching it never evicts an existing theme silently. */
+export const MAX_CUSTOM_THEMES = 24
+/** Stable internal error message used to localize the saved-theme limit. */
+export const PRISM_THEME_LIMIT_ERROR = 'prism-theme-limit'
+/** Stable error raised when a library edit cannot be durably persisted. */
+export const PRISM_THEME_PERSIST_ERROR = 'prism-theme-persist-failed'
+
+/** Portable appearance values: no wallpaper bytes, rotation state, or master switch. */
+export type PrismThemeValues = Omit<PrismSettings,
+  | 'enabled' | 'customThemes' | 'background'
+  | 'wallpaperDark' | 'wallpaperLight' | 'wallpaperDimDark' | 'wallpaperDimLight'
+  | 'wallpaperInterval' | 'wallpaperLoop' | 'wallpaperPinnedDark' | 'wallpaperPinnedLight'
+  | 'wallpaperBlur' | 'wallpaperFrost'>
+
+/** One user-created theme stored alongside the durable settings document. */
+export interface PrismCustomTheme {
+  /** Stable local identifier. */
+  id: string
+  /** User-visible name, trimmed and length-limited. */
+  name: string
+  /** Portable appearance values. */
+  values: PrismThemeValues
+}
 
 /** One material's recipe. */
 export interface MaterialRecipe {
@@ -185,16 +211,27 @@ export const SETTINGS_DEFAULTS: PrismSettings = Object.freeze({
   wallpaperPinnedLight: 0,
   wallpaperBlur: 20,
   wallpaperFrost: 0,
+  customThemes: [],
 })
 
 /** One named preset's knob bundle. */
 export interface PresetRecipe {
   /** Accent hue. */
   accentHue: number
+  /** Accent saturation, 0-100. */
+  accentSat: number
+  /** Accent lightness, 0-100. */
+  accentLight: number
   /** Backdrop hue. */
   bgHue: number
+  /** Backdrop saturation, 0-100. */
+  bgSat: number
+  /** Backdrop lightness, 0-100. */
+  bgLight: number
   /** Glass material id. */
   material: PrismMaterial
+  /** Backdrop blur, px. */
+  blur: number
   /** Global frost, 0-100. */
   frost: number
   /** Background brightness, 0-100. */
@@ -203,11 +240,15 @@ export interface PresetRecipe {
   motion: number
 }
 
-/** Curated whole-skin presets. */
+/** Curated whole-skin presets. Every recipe is intentionally complete: one
+ *  click changes a coherent palette and material rather than only the hue. */
 export const PRESETS: Readonly<Record<PrismPreset, PresetRecipe>> = Object.freeze({
-  night: Object.freeze({ accentHue: 190, bgHue: 222, material: 'frosted', frost: 46, bgBrightness: 38, motion: 60 }),
-  aurora: Object.freeze({ accentHue: 318, bgHue: 165, material: 'velvet', frost: 36, bgBrightness: 50, motion: 80 }),
-  crystal: Object.freeze({ accentHue: 205, bgHue: 200, material: 'clear', frost: 30, bgBrightness: 56, motion: 30 }),
+  crystal: Object.freeze({ accentHue: 205, accentSat: 82, accentLight: 54, bgHue: 200, bgSat: 70, bgLight: 72, material: 'clear', blur: 14, frost: 32, bgBrightness: 58, motion: 28 }),
+  night: Object.freeze({ accentHue: 190, accentSat: 82, accentLight: 58, bgHue: 222, bgSat: 72, bgLight: 46, material: 'frosted', blur: 20, frost: 46, bgBrightness: 38, motion: 52 }),
+  aurora: Object.freeze({ accentHue: 318, accentSat: 76, accentLight: 62, bgHue: 165, bgSat: 78, bgLight: 58, material: 'velvet', blur: 24, frost: 38, bgBrightness: 48, motion: 72 }),
+  dune: Object.freeze({ accentHue: 28, accentSat: 68, accentLight: 52, bgHue: 38, bgSat: 58, bgLight: 70, material: 'frosted', blur: 16, frost: 40, bgBrightness: 60, motion: 22 }),
+  rose: Object.freeze({ accentHue: 350, accentSat: 62, accentLight: 60, bgHue: 320, bgSat: 42, bgLight: 66, material: 'velvet', blur: 22, frost: 42, bgBrightness: 48, motion: 30 }),
+  forest: Object.freeze({ accentHue: 158, accentSat: 58, accentLight: 46, bgHue: 176, bgSat: 52, bgLight: 52, material: 'frosted', blur: 18, frost: 44, bgBrightness: 44, motion: 36 }),
 })
 
 /** Numeric knob ranges. */
@@ -247,6 +288,20 @@ function dimList(value: unknown, fallbackCount: number): number[] {
 /** Numeric field reader with a default. */
 function numberField(value: unknown, fallback: number): number {
   return typeof value === 'number' ? value : fallback
+}
+
+/** Read the portable custom-theme library defensively. Values are normalized
+ *  again at application time, so a damaged localStorage entry cannot leak
+ *  malformed CSS into the layer. */
+function customThemesField(value: unknown): PrismCustomTheme[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is PrismCustomTheme => {
+    if (typeof item !== 'object' || item === null) return false
+    const candidate = item as Partial<PrismCustomTheme>
+    return typeof candidate.id === 'string' && /^[a-z0-9-]{1,64}$/.test(candidate.id)
+      && typeof candidate.name === 'string' && candidate.name.trim() !== ''
+      && typeof candidate.values === 'object' && candidate.values !== null
+  }).slice(0, MAX_CUSTOM_THEMES).map(item => ({ ...item, name: item.name.trim().slice(0, 40) }))
 }
 
 /** Zone reader: merges stored zones over the neutral defaults. */
@@ -315,18 +370,22 @@ export function readSettings(): PrismSettings {
       wallpaperPinnedLight: numberField(parsed.wallpaperPinnedLight, 0),
       wallpaperBlur: numberField(parsed.wallpaperBlur, SETTINGS_DEFAULTS.wallpaperBlur),
       wallpaperFrost: numberField(parsed.wallpaperFrost, SETTINGS_DEFAULTS.wallpaperFrost),
+      customThemes: customThemesField(parsed.customThemes),
     }
   } catch {
     return { ...SETTINGS_DEFAULTS, zones: { ...DEFAULT_ZONES } }
   }
 }
 
-/** Persist the document (quota failures keep the in-memory state). */
-export function writeSettings(settings: PrismSettings): void {
+/** Persist the document.
+ * @returns false when serialization or localStorage (including quota) fails.
+ */
+export function writeSettings(settings: PrismSettings): boolean {
   try {
     localStorage.setItem(PRISM_SETTINGS_KEY, JSON.stringify(settings))
+    return true
   } catch {
-    /* in-memory state still applies for this tab */
+    return false
   }
 }
 

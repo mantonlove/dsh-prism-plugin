@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /** Durable settings document: defaults, partial merge, migrations, round-trips. */
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   isPrismStorageKey, PRISM_SETTINGS_KEY, readSettings, SETTINGS_DEFAULTS, writeSettings,
 } from '../src/client/prism-settings.ts'
@@ -55,6 +55,18 @@ describe('readSettings', () => {
     expect(readSettings().material).toBe('velvet')
   })
 
+  it('round-trips valid custom themes and filters damaged entries', () => {
+    const { customThemes: _ignored, ...values } = readSettings()
+    const valid = { id: 'theme-ok', name: '  Saved look  ', values }
+    localStorage.setItem(PRISM_SETTINGS_KEY, JSON.stringify({
+      customThemes: [valid, null, { id: 'bad id!', name: 'Bad', values: {} }, { id: 'missing-name', values: {} }],
+    }))
+    const themes = readSettings().customThemes
+    expect(themes).toHaveLength(1)
+    expect(themes[0]?.name).toBe('Saved look')
+    expect(themes[0]?.id).toBe('theme-ok')
+  })
+
   it('returns the defaults for unreadable documents', () => {
     localStorage.setItem(PRISM_SETTINGS_KEY, '{not json')
     expect(readSettings().material).toBe('frosted')
@@ -72,7 +84,7 @@ describe('writeSettings + readSettings', () => {
       wallpaperDark: ['data:image/gif;base64,xx'],
       wallpaperFrost: 40,
     }
-    writeSettings(settings)
+    expect(writeSettings(settings)).toBe(true)
     const loaded = readSettings()
     expect(loaded.accentHue).toBe(300)
     expect(loaded.accentSat).toBe(40)
@@ -80,6 +92,13 @@ describe('writeSettings + readSettings', () => {
     expect(loaded.accentOpacity).toBe(60)
     expect(loaded.wallpaperDark).toEqual(['data:image/gif;base64,xx'])
     expect(loaded.wallpaperFrost).toBe(40)
+  })
+
+  it('reports quota and serialization failures instead of claiming durable success', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota') })
+    expect(writeSettings(readSettings())).toBe(false)
+    expect(setItem).toHaveBeenCalledOnce()
+    setItem.mockRestore()
   })
 })
 

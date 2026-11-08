@@ -1,8 +1,8 @@
 /**
  * Prism row slot stores: mirrors of the layer's settings document. The
  * plugin's apply-world change listener is the only writer; the row components
- * read via props.useStore. One store per settings surface (plugin card and
- * general appearance panel).
+ * read via props.useStore. DSH 0.2.2 uses one General appearance surface;
+ * the master switch is mirrored through this same store.
  */
 import { type EngineStoreHandle } from '@deepseek-ai/dsh-client-store';
 import type { PrismSettings } from './prism-settings.ts';

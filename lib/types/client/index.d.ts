@@ -1,21 +1,12 @@
 /**
- * Prism client plugin body: the toggleable glassmorphism skin. Owns the
- * durable settings document, applies/retracts the theme layer through the
- * official theme override stack, and registers two settings surfaces:
- * - the master on/off card into the Plugins section (`settings.plugin.item`,
- *   same shape as the other plugin cards);
- * - every glass knob into the General section's appearance area
- *   (`settings.general.item`, right under 外观).
- * One click on the master switch returns the stock UI (every layer is an
- * effect, disposed on flip).
+ * Prism client plugin body. The official theme override stack owns visual
+ * state; the General → Appearance panel owns every control, including the
+ * master switch (DSH 0.2.2 removed the legacy settings.plugin.item slot).
+ * Disabling Prism retracts every override and returns the stock interface.
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis';
 import './prism.module.css';
-/** Required services: theme override stack plus the settings-card surfaces. */
 export declare const inject: string[];
-/**
- * Client plugin body.
- * @param ctx - client cordis context.
- */
+/** Register Prism's single settings surface and its reactive state bridge. */
 export declare function apply(ctx: ClientContext): void;
 //# sourceMappingURL=index.d.ts.map

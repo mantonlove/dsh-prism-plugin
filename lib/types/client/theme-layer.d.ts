@@ -37,8 +37,12 @@ export declare class PrismLayer {
      *  knob gestures never serialize the (possibly multi-megabyte) document
      *  at drag cadence. */
     private persist;
-    /** Flush any pending debounced write immediately. */
+    /** Flush any pending debounced write immediately.
+     * @returns whether the pending document reached durable storage.
+     */
     private flushPersist;
+    /** Roll back a library edit whose synchronous durable write failed. */
+    private rejectFailedLibraryWrite;
     /** Current enable state (the plugin card mirrors this). */
     getEnabled(): boolean;
     /** Current knob document (the settings rows mirror this). */
@@ -57,9 +61,25 @@ export declare class PrismLayer {
     update(patch: Omit<Partial<PrismSettings>, 'zones'> & {
         zones?: Partial<PrismZones>;
     }): void;
-    /** Apply a whole named preset (accent, hue, material, frost, brightness, contrast, motion). */
+    /** Apply a complete curated preset (palette, material, depth, and motion). */
     applyPreset(preset: PrismPreset): void;
-    /** Reset every knob to the shipped defaults. */
+    /** Save the current appearance as a portable custom theme. Duplicate names
+     *  receive a numeric suffix instead of silently replacing a saved look. */
+    saveTheme(name: string): string | null;
+    /** Apply one saved theme; unknown ids are harmless no-ops. */
+    applyCustomTheme(id: string): void;
+    /** Delete one saved theme without touching the active appearance. */
+    deleteCustomTheme(id: string): void;
+    /** Export the current appearance as a portable, human-readable JSON file. */
+    exportTheme(): string;
+    /** Import, save, and immediately apply a portable theme.
+     * @returns the imported display name.
+     */
+    importTheme(raw: string): string;
+    /** Restore only the six glass zones, leaving palette and typography intact. */
+    resetZones(): void;
+    /** Reset every appearance knob to the shipped defaults; saved themes and
+     *  uploaded wallpapers remain available. */
     reset(): void;
     /**
      * Ingest an uploaded wallpaper file for one scheme: downscale (or GIF

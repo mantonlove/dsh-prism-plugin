@@ -14,6 +14,10 @@ export interface PrismSliderProps {
     unit?: string;
     /** Called with the new target on every interaction. */
     onChange: (value: number) => void;
+    /** Optional reset target: double-clicking the track restores this value. */
+    defaultValue?: number;
+    /** Localized hint shown when a per-control reset is available. */
+    resetHint?: string;
 }
 /**
  * Render one damped slider row: label, track with accent fill, draggable
@@ -21,7 +25,19 @@ export interface PrismSliderProps {
  * @param props - slider props.
  * @returns the slider row.
  */
-export declare function PrismSlider({ label, value, min, max, step, unit, onChange }: PrismSliderProps): import("react").JSX.Element;
+export declare function PrismSlider({ label, value, min, max, step, unit, onChange, defaultValue, resetHint }: PrismSliderProps): import("react").JSX.Element;
+/** Shared action-button variants. */
+export type PrismButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger';
+/** A compact native button with consistent state styling. */
+export declare function PrismButton({ variant, className, children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: PrismButtonVariant;
+}): import("react").JSX.Element;
+/** Accessible master/feature switch. */
+export declare function Switch({ label, checked, onChange }: {
+    label: string;
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+}): import("react").JSX.Element;
 /** One option of a segmented picker. */
 export interface SegmentedOption<T extends string> {
     id: T;

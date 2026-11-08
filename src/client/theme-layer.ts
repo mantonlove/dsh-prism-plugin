@@ -25,8 +25,9 @@ import { buildFontOverrides } from './fonts.ts'
 import { buildTokenOverrides } from './tokens.ts'
 import { advanceSpring, clampValue, createSpring, springSettled, type SpringState } from './spring.ts'
 import { analyzeLuminance, readWallpaper, veilAlpha, type WallpaperError } from './wallpaper.ts'
+import { makeCustomTheme, normalizeThemeValues, parseThemeDocument, serializeTheme } from './theme-io.ts'
 import {
-  CODE_FONT_CHOICES, FONT_CHOICES, MATERIALS, PRESETS, RANGES, readSettings, writeSettings,
+  CODE_FONT_CHOICES, FONT_CHOICES, MATERIALS, MAX_CUSTOM_THEMES, PRESETS, PRISM_THEME_LIMIT_ERROR, PRISM_THEME_PERSIST_ERROR, RANGES, readSettings, writeSettings,
   type PrismFontChoice, type PrismMaterial, type PrismPreset, type PrismSettings, type PrismZones,
 } from './prism-settings.ts'
 
@@ -56,6 +57,18 @@ interface DampedKnob {
 /** Whether the environment prefers reduced motion (checked live, so OS flips apply). */
 function prefersReducedMotion(): boolean {
   return typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+/** Keep imports and repeated exports non-destructive by allocating a new name. */
+function uniqueThemeName(name: string, themes: PrismSettings['customThemes']): string {
+  const taken = new Set(themes.map(theme => theme.name))
+  if (!taken.has(name)) return name
+  for (let index = 2; index <= themes.length + 1; index += 1) {
+    const suffix = ` (${String(index)})`
+    const candidate = `${name.slice(0, 40 - suffix.length).trimEnd()}${suffix}`
+    if (!taken.has(candidate)) return candidate
+  }
+  return name
 }
 
 /**
@@ -114,9 +127,13 @@ export class PrismLayer {
         this.applyWallpaperSource()
         this.signal()
       }
+      const onPageHide = (): void => { this.flushPersist() }
       ctx.on('theme/change', onTheme)
+      window.addEventListener('pagehide', onPageHide)
       return () => {
         window.removeEventListener('storage', onStorage)
+        window.removeEventListener('pagehide', onPageHide)
+        this.flushPersist()
         this.unmount()
       }
     }, 'ui-prism: layer lifecycle')
@@ -140,13 +157,27 @@ export class PrismLayer {
     }, 300)
   }
 
-  /** Flush any pending debounced write immediately. */
-  private flushPersist(): void {
-    if (this.persistTimer !== undefined) {
-      window.clearTimeout(this.persistTimer)
-      this.persistTimer = undefined
-      writeSettings(this.settings)
+  /** Flush any pending debounced write immediately.
+   * @returns whether the pending document reached durable storage.
+   */
+  private flushPersist(): boolean {
+    if (this.persistTimer === undefined) return true
+    window.clearTimeout(this.persistTimer)
+    this.persistTimer = undefined
+    return writeSettings(this.settings)
+  }
+
+  /** Roll back a library edit whose synchronous durable write failed. */
+  private rejectFailedLibraryWrite(previous: PrismSettings): void {
+    this.settings = previous
+    if (previous.enabled) {
+      this.applyDiscrete()
+      this.applyAllKnobs()
+    } else {
+      this.unmount()
     }
+    this.signal()
+    throw new Error(PRISM_THEME_PERSIST_ERROR)
   }
 
   /** Current enable state (the plugin card mirrors this). */
@@ -161,6 +192,12 @@ export class PrismLayer {
       zones: { ...this.settings.zones },
       wallpaperDark: [...this.settings.wallpaperDark],
       wallpaperLight: [...this.settings.wallpaperLight],
+      wallpaperDimDark: [...this.settings.wallpaperDimDark],
+      wallpaperDimLight: [...this.settings.wallpaperDimLight],
+      customThemes: this.settings.customThemes.map(theme => ({
+        ...theme,
+        values: { ...theme.values, zones: { ...theme.values.zones } },
+      })),
     }
   }
 
@@ -206,20 +243,68 @@ export class PrismLayer {
     this.signal()
   }
 
-  /** Apply a whole named preset (accent, hue, material, frost, brightness, contrast, motion). */
+  /** Apply a complete curated preset (palette, material, depth, and motion). */
   applyPreset(preset: PrismPreset): void {
-    const recipe = PRESETS[preset]
-    this.update({
-      accentHue: recipe.accentHue,
-      bgHue: recipe.bgHue,
-      material: recipe.material,
-      frost: recipe.frost,
-      bgBrightness: recipe.bgBrightness,
-      motion: recipe.motion,
-    })
+    this.update({ ...PRESETS[preset] })
   }
 
-  /** Reset every knob to the shipped defaults. */
+  /** Save the current appearance as a portable custom theme. Duplicate names
+   *  receive a numeric suffix instead of silently replacing a saved look. */
+  saveTheme(name: string): string | null {
+    const trimmed = name.trim().slice(0, 40)
+    if (trimmed === '' || this.settings.customThemes.length >= MAX_CUSTOM_THEMES) return null
+    const id = `theme-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+    const theme = makeCustomTheme(this.settings, uniqueThemeName(trimmed, this.settings.customThemes), id)
+    const previous = this.settings
+    this.update({ customThemes: [...previous.customThemes, theme] })
+    if (!this.flushPersist()) this.rejectFailedLibraryWrite(previous)
+    return id
+  }
+
+  /** Apply one saved theme; unknown ids are harmless no-ops. */
+  applyCustomTheme(id: string): void {
+    const theme = this.settings.customThemes.find(item => item.id === id)
+    if (theme !== undefined) this.update(normalizeThemeValues(theme.values))
+  }
+
+  /** Delete one saved theme without touching the active appearance. */
+  deleteCustomTheme(id: string): void {
+    if (!this.settings.customThemes.some(theme => theme.id === id)) return
+    const previous = this.settings
+    this.update({ customThemes: previous.customThemes.filter(item => item.id !== id) })
+    if (!this.flushPersist()) this.rejectFailedLibraryWrite(previous)
+  }
+
+  /** Export the current appearance as a portable, human-readable JSON file. */
+  exportTheme(): string {
+    return serializeTheme(this.settings, 'Prism theme')
+  }
+
+  /** Import, save, and immediately apply a portable theme.
+   * @returns the imported display name.
+   */
+  importTheme(raw: string): string {
+    const document = parseThemeDocument(raw)
+    if (this.settings.customThemes.length >= MAX_CUSTOM_THEMES) throw new Error(PRISM_THEME_LIMIT_ERROR)
+    const id = `theme-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+    const name = uniqueThemeName(document.name, this.settings.customThemes)
+    const theme = makeCustomTheme({ ...this.settings, ...document.values }, name, id)
+    const previous = this.settings
+    this.update({
+      ...document.values,
+      customThemes: [...previous.customThemes, theme],
+    })
+    if (!this.flushPersist()) this.rejectFailedLibraryWrite(previous)
+    return name
+  }
+
+  /** Restore only the six glass zones, leaving palette and typography intact. */
+  resetZones(): void {
+    this.update({ zones: { base: 100, sidebar: 100, card: 100, input: 100, overlay: 100, bubble: 100 } })
+  }
+
+  /** Reset every appearance knob to the shipped defaults; saved themes and
+   *  uploaded wallpapers remain available. */
   reset(): void {
     this.update({
       material: 'frosted',

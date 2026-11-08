@@ -5,7 +5,7 @@
  * the skin glides — so these controls stay dumb and testable.
  */
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconChevronDownOutlineMedium } from '@deepseek-ai/dsh-client-ui-primitives'
 import { hexToHsl, hslToHex } from './color.ts'
 import css from './PrismControls.module.css'
 
@@ -25,6 +25,10 @@ export interface PrismSliderProps {
   unit?: string
   /** Called with the new target on every interaction. */
   onChange: (value: number) => void
+  /** Optional reset target: double-clicking the track restores this value. */
+  defaultValue?: number
+  /** Localized hint shown when a per-control reset is available. */
+  resetHint?: string
 }
 
 /** Compute the value for a pointer x position inside the track bounds. */
@@ -39,7 +43,7 @@ function valueFromPointer(clientX: number, rect: DOMRect, min: number, max: numb
  * @param props - slider props.
  * @returns the slider row.
  */
-export function PrismSlider({ label, value, min, max, step, unit, onChange }: PrismSliderProps) {
+export function PrismSlider({ label, value, min, max, step, unit, onChange, defaultValue, resetHint }: PrismSliderProps) {
   const trackRef = useRef<HTMLDivElement | null>(null)
   const draggingRef = useRef(false)
   const labelId = useId()
@@ -71,6 +75,11 @@ export function PrismSlider({ label, value, min, max, step, unit, onChange }: Pr
   }, [])
 
   const onKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    if ((event.key === 'Delete' || event.key === 'Backspace') && defaultValue !== undefined) {
+      event.preventDefault()
+      onChange(defaultValue)
+      return
+    }
     let next: number | undefined
     switch (event.key) {
       case 'ArrowLeft':
@@ -98,7 +107,7 @@ export function PrismSlider({ label, value, min, max, step, unit, onChange }: Pr
     }
     event.preventDefault()
     onChange(Math.min(max, Math.max(min, next)))
-  }, [max, min, onChange, step, value])
+  }, [defaultValue, max, min, onChange, step, value])
 
   const fillStyle: React.CSSProperties = { width: `${String(ratio * 100)}%` }
   const thumbStyle: React.CSSProperties = { left: `${String(ratio * 100)}%` }
@@ -116,6 +125,8 @@ export function PrismSlider({ label, value, min, max, step, unit, onChange }: Pr
         aria-valuemax={max}
         aria-valuenow={displayedValue}
         aria-valuetext={unit === undefined || unit === '' ? undefined : `${String(displayedValue)}${unit}`}
+        title={defaultValue === undefined ? undefined : resetHint}
+        onDoubleClick={() => { if (defaultValue !== undefined) onChange(defaultValue) }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -125,12 +136,40 @@ export function PrismSlider({ label, value, min, max, step, unit, onChange }: Pr
         <div className={css.sliderThumb} style={thumbStyle} />
       </div>
       {unit !== undefined && unit !== '' && (
-        <span className={css.sliderReadout}>
+        <output className={css.sliderReadout} aria-label={`${label} ${String(displayedValue)}${unit}`}>
           {String(displayedValue)}
-          {unit}
-        </span>
+          <span>{unit}</span>
+        </output>
       )}
     </div>
+  )
+}
+
+/** Shared action-button variants. */
+export type PrismButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger'
+
+/** A compact native button with consistent state styling. */
+export function PrismButton({ variant = 'secondary', className = '', children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: PrismButtonVariant }) {
+  return (
+    <button type="button" className={`${css.button} ${css[`button${variant[0]?.toUpperCase() ?? ''}${variant.slice(1)}`]} ${className}`} {...props}>
+      {children}
+    </button>
+  )
+}
+
+/** Accessible master/feature switch. */
+export function Switch({ label, checked, onChange }: { label: string, checked: boolean, onChange: (checked: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      className={checked ? css.switchOn : css.switch}
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => { onChange(!checked) }}
+    >
+      <span className={css.switchThumb} aria-hidden="true" />
+    </button>
   )
 }
 
@@ -205,7 +244,7 @@ export function Group({ title, defaultOpen = false, children }: GroupProps) {
       >
         <span className={css.groupTitle}>{title}</span>
         <span className={open ? css.groupChevronOpen : css.groupChevron} aria-hidden="true">
-          <IconChevronDownOutline14 />
+          <IconChevronDownOutlineMedium size={14} />
         </span>
       </button>
       {open && <div className={css.groupBody} id={bodyId}>{children}</div>}
