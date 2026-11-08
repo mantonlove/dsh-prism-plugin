@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises'
-import { basename, resolve } from 'node:path'
+import { basename, relative, resolve } from 'node:path'
 import { transform } from 'lightningcss'
 import { defineConfig, type UserConfig } from 'tsdown'
 
@@ -38,24 +38,29 @@ const cssPlugin = {
   resolveId(source: string, importer: string | undefined) {
     if (!source.endsWith('.css')) return null
     const file = importer === undefined ? source : resolve(importer, '..', source)
-    return CSS_PREFIX + file + CSS_SUFFIX
+    // Keep virtual module ids and Lightning CSS hashes independent of the checkout path.
+    const projectFile = relative(process.cwd(), file).replaceAll('\\', '/')
+    return CSS_PREFIX + projectFile + CSS_SUFFIX
   },
   async load(this: { addWatchFile: (file: string) => void }, id: string) {
     if (!id.startsWith(CSS_PREFIX)) return null
-    const file = id.slice(CSS_PREFIX.length, -CSS_SUFFIX.length)
+    const projectFile = id.slice(CSS_PREFIX.length, -CSS_SUFFIX.length)
+    const file = resolve(projectFile)
     this.addWatchFile(file)
     const isModule = file.endsWith('.module.css')
     const { code, exports } = transform({
-      filename: file,
+      filename: projectFile,
       code: await readFile(file),
       cssModules: isModule ? { pattern: '[hash]_[local]' } : false,
       minify: true,
     })
     const classMap: Record<string, string> = {}
     if (isModule) {
-      for (const [local, entry] of Object.entries(exports ?? {})) classMap[local] = entry.name
+      const exportedClasses = exports ?? {}
+      // Lightning CSS uses a hash map for exports; sort keys for reproducible bundles.
+      for (const local of Object.keys(exportedClasses).sort()) classMap[local] = exportedClasses[local]!.name
     }
-    return styleModule(file, code.toString(), isModule ? classMap : undefined)
+    return styleModule(projectFile, code.toString(), isModule ? classMap : undefined)
   },
 }
 
