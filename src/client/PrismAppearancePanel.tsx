@@ -315,7 +315,7 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
         <div className={css.brandRow}>
           <span className={css.brandMark} aria-hidden="true"><i /><i /><i /></span>
           <div>
-            <div className={css.titleRow}><h2 className={css.title}>Prism</h2><span className={css.version}>2.0</span></div>
+            <div className={css.titleRow}><h2 className={css.title}>DSH Background</h2><span className={css.version}>2.0</span></div>
             <p className={css.subtitle}>{t('prism.subtitle')}</p>
           </div>
         </div>
@@ -348,7 +348,7 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
         </div>
       ) : (
         <>
-          <div className={css.tabs} role="tablist" aria-label="Prism" onKeyDown={onTabKeys}>
+          <div className={css.tabs} role="tablist" aria-label="DSH Background" onKeyDown={onTabKeys}>
             {TABS.map(id => (
               <button
                 key={id}

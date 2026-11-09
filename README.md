@@ -1,6 +1,6 @@
-# Prism · 棱镜 — DSH Glassmorphism Theme Plugin
+# DSH Background — Custom Background Images & Glassmorphism
 
-Prism is a glassmorphism studio for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI. Version 2 is adapted to the DSH `0.2.2-rc.1` settings and theme APIs and ships prebuilt in `lib/`; installing the plugin does not require a build step.
+**DSH Background** lets you upload your own photos or animated GIFs as the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI background, then tune glassmorphism, opacity, typography, colors, and motion. Version 2 is adapted to the DSH `0.2.2-rc.1` settings and theme APIs and ships prebuilt in `lib/`; installing the plugin does not require a build step.
 
 ## Install
 
@@ -22,7 +22,7 @@ For local development, use `link:/absolute/path/to/dsh-prism-plugin` instead. Li
 dsh plugin --profile web add github:mantonlove/dsh-prism-plugin
 ```
 
-Restart `dsh web` and refresh the page. Open **设置 → 通用设置 → 外观 → Prism** to use the theme studio. The master switch is built into the Prism panel.
+Restart `dsh web` and refresh the page. Open **设置 → 通用设置 → 外观 → DSH Background** to use the theme studio. The master switch is built into the DSH Background panel.
 
 Uninstall:
 
@@ -42,7 +42,8 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 - Clear, frosted, and velvet materials; blur and global frost; six independent zone opacities for the base, sidebar, cards, inputs, overlays, and bubbles.
 - Hex and color-picker controls for the accent, backdrop, and light/dark text colors.
-- Spring-damped adjustments, font scale and family, animated aurora, and separate light/dark photo or GIF wallpaper playlists with fixed/loop playback and manage mode.
+- **Custom background images:** upload your own photos or animated GIFs into separate light/dark playlists, with fixed/loop playback and manage mode.
+- Spring-damped adjustments, font scale and family, and animated aurora.
 - A master switch that restores the stock interface, persistent `localStorage` settings, cross-tab synchronization, and reduced-motion support.
 - Theme exports contain appearance settings only. Wallpaper images, wallpaper playlists, and the master-switch state are never included.
 
@@ -52,7 +53,7 @@ Examples of the glass theme applied to the workspace, welcome surface, and compo
 
 | Effect 1 | Effect 2 | Effect 3 |
 |---|---|---|
-| ![Prism glass effect 1](assets/shot-1.jpg) | ![Prism glass effect 2](assets/shot-2.jpg) | ![Prism glass effect 3](assets/shot-3.jpg) |
+| ![DSH Background glass effect 1](assets/shot-1.jpg) | ![DSH Background glass effect 2](assets/shot-2.jpg) | ![DSH Background glass effect 3](assets/shot-3.jpg) |
 
 ## Development
 

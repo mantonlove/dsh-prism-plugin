@@ -1,5 +1,5 @@
 /**
- * Portable Prism theme documents. A theme contains appearance values only:
+ * Portable DSH Background theme documents. A theme contains appearance values only:
  * wallpaper bytes, rotation state, the master switch, and the custom-theme
  * library itself never cross the file boundary. Every imported number is
  * finite-checked and clamped before it reaches the token layer.
@@ -98,11 +98,11 @@ export function normalizeThemeValues(input: unknown): PrismThemeValues {
 }
 
 /** Serialize a named snapshot with stable formatting. */
-export function serializeTheme(settings: PrismSettings, name = 'Prism theme'): string {
+export function serializeTheme(settings: PrismSettings, name = 'DSH Background theme'): string {
   const document: PrismThemeDocument = {
     format: PRISM_THEME_FORMAT,
     version: PRISM_THEME_VERSION,
-    name: name.trim().slice(0, 40) || 'Prism theme',
+    name: name.trim().slice(0, 40) || 'DSH Background theme',
     values: themeSnapshot(settings),
   }
   return JSON.stringify(document, null, 2)

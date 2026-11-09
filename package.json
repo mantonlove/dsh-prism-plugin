@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-prism",
-  "description": "Prism: a glassmorphism studio for the DSH Web GUI with six presets, portable custom themes, adjustable glass, typography, accent colors, aurora, and photo/GIF wallpapers",
-  "version": "2.0.1",
+  "description": "DSH Background: upload custom photo/GIF backgrounds and tune glassmorphism, typography, accent colors, aurora, and portable themes for the DSH Web GUI",
+  "version": "2.0.2",
   "publishConfig": {
     "access": "public"
   },

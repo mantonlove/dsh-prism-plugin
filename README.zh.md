@@ -1,6 +1,6 @@
-# Prism · 棱镜 — DSH 毛玻璃主题插件
+# DSH Background — 自定义背景图与毛玻璃主题
 
-Prism 是面向 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI 的毛玻璃主题工作台。v2 已适配 DSH `0.2.2-rc.1` 的设置与主题 API，仓库自带 `lib/` 预构建产物，安装插件无需执行构建。
+**DSH Background** 可以把你自己的照片或 GIF 动图上传为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI 的背景，并自由调整毛玻璃、透明度、字体、颜色与动效。v2 已适配 DSH `0.2.2-rc.1` 的设置与主题 API，仓库自带 `lib/` 预构建产物，安装插件无需执行构建。
 
 ## 安装
 
@@ -22,7 +22,7 @@ github:mantonlove/dsh-prism-plugin
 dsh plugin --profile web add github:mantonlove/dsh-prism-plugin
 ```
 
-重启 `dsh web` 并刷新页面，然后打开 **设置 → 通用设置 → 外观 → Prism**。主题总开关已经并入 Prism 面板。
+重启 `dsh web` 并刷新页面，然后打开 **设置 → 通用设置 → 外观 → DSH Background**。主题总开关已经并入 DSH Background 面板。
 
 卸载：
 
@@ -42,7 +42,8 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 - 清透、磨砂、毛绒三种材质；模糊与全局磨砂感；主背景、侧边栏、卡片、输入框、菜单弹层、聊天气泡六区独立透明度。
 - 主题色、背景色、明暗文字颜色均支持色号输入与取色器。
-- 弹簧阻尼调节、文字大小与字体、动态极光，以及明暗分槽的图片/GIF 多图轮播（固定/循环 + 管理模式）。
+- **自定义背景图**：上传自己的照片或 GIF 动图，明暗模式分别管理图片列表，支持固定显示、自动轮播与管理模式。
+- 弹簧阻尼调节、文字大小与字体、动态极光。
 - 总开关一键还原原生界面；设置通过 `localStorage` 持久化并跨标签页同步；支持减少动态效果。
 - 主题导出只包含外观参数，不包含壁纸图片、壁纸播放列表或总开关状态。
 
@@ -52,7 +53,7 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 | 效果一 | 效果二 | 效果三 |
 |---|---|---|
-| ![Prism 毛玻璃效果一](assets/shot-1.jpg) | ![Prism 毛玻璃效果二](assets/shot-2.jpg) | ![Prism 毛玻璃效果三](assets/shot-3.jpg) |
+| ![DSH Background 毛玻璃效果一](assets/shot-1.jpg) | ![DSH Background 毛玻璃效果二](assets/shot-2.jpg) | ![DSH Background 毛玻璃效果三](assets/shot-3.jpg) |
 
 ## 开发
 

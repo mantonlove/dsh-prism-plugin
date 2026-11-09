@@ -1,5 +1,5 @@
 /**
- * Portable Prism theme documents. A theme contains appearance values only:
+ * Portable DSH Background theme documents. A theme contains appearance values only:
  * wallpaper bytes, rotation state, the master switch, and the custom-theme
  * library itself never cross the file boundary. Every imported number is
  * finite-checked and clamped before it reaches the token layer.

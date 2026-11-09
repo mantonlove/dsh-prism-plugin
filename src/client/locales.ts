@@ -5,8 +5,8 @@ export const NS = 'settings.prism'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'prism.title': '棱镜',
-  'prism.description': '全局毛玻璃质感：材质、模糊、磨砂、文字、颜色、动效、多图轮播壁纸与对话地标全部可调，滑轨带阻尼手感',
+  'prism.title': 'DSH Background',
+  'prism.description': '上传自己的照片或 GIF 作为界面背景，自由调整毛玻璃、透明度、字体、颜色与动效',
   'prism.enable': '开启',
   'prism.disable': '关闭',
   'prism.material': '材质',
@@ -72,8 +72,8 @@ export const zh = {
   'prism.errorSize': '文件过大（最大 30 MB）',
   'prism.errorRead': '文件读取失败',
   'prism.errorDecode': '图片无法解码',
-  'prism.enabled': '启用 Prism 棱镜主题',
-  'prism.subtitle': '让光穿过界面。调整材质、色彩与文字，实时看到变化。',
+  'prism.enabled': '启用 DSH Background',
+  'prism.subtitle': '自定义背景图与毛玻璃主题。上传照片或 GIF，实时调整界面效果。',
   'prism.previewTitle': '你的下一段灵感',
   'prism.previewText': '清透的表面，恰好合适的层次。',
   'prism.previewInput': '开始输入…',
@@ -98,7 +98,7 @@ export const zh = {
   'prism.themeImported': '主题已导入并应用。',
   'prism.themeDeleted': '主题已删除。',
   'prism.themeExported': '主题文件已导出。',
-  'prism.themeImportFailed': '无法导入：请选择有效的 Prism 主题 JSON 文件。',
+  'prism.themeImportFailed': '无法导入：请选择有效的 DSH Background 主题 JSON 文件。',
   'prism.themeLimit': '最多保存 24 套主题；请先删除一套再保存。',
   'prism.themePersistFailed': '保存失败：浏览器存储空间不足或不可用，请重试。',
   'prism.resetAll': '恢复默认',
@@ -125,8 +125,8 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** English dictionary. */
 export const en = {
-  'prism.title': 'Prism',
-  'prism.description': 'Global glassmorphism: material, blur, frost, typography, color, motion, rotating wallpapers, and conversation landmarks — every slider is spring-damped',
+  'prism.title': 'DSH Background',
+  'prism.description': 'Upload your own photos or GIFs as interface backgrounds, then tune glass, opacity, typography, colors, and motion',
   'prism.enable': 'On',
   'prism.disable': 'Off',
   'prism.material': 'Material',
@@ -192,8 +192,8 @@ export const en = {
   'prism.errorSize': 'File too large (30 MB maximum)',
   'prism.errorRead': 'File read failed',
   'prism.errorDecode': 'Image could not be decoded',
-  'prism.enabled': 'Enable Prism theme',
-  'prism.subtitle': 'Let light move through your workspace. Tune material, color, and type with a live preview.',
+  'prism.enabled': 'Enable DSH Background',
+  'prism.subtitle': 'Custom background images and glassmorphism. Upload a photo or GIF and tune the interface live.',
   'prism.previewTitle': 'Your next idea',
   'prism.previewText': 'Clear surfaces, just the right amount of depth.',
   'prism.previewInput': 'Start typing…',
@@ -218,7 +218,7 @@ export const en = {
   'prism.themeImported': 'Theme imported and applied.',
   'prism.themeDeleted': 'Theme deleted.',
   'prism.themeExported': 'Theme file exported.',
-  'prism.themeImportFailed': 'Could not import. Choose a valid Prism theme JSON file.',
+  'prism.themeImportFailed': 'Could not import. Choose a valid DSH Background theme JSON file.',
   'prism.themeLimit': 'You can save up to 24 themes. Delete one before saving another.',
   'prism.themePersistFailed': 'Could not save because browser storage is full or unavailable. Try again.',
   'prism.resetAll': 'Restore defaults',

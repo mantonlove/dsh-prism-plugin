@@ -277,7 +277,7 @@ export class PrismLayer {
 
   /** Export the current appearance as a portable, human-readable JSON file. */
   exportTheme(): string {
-    return serializeTheme(this.settings, 'Prism theme')
+    return serializeTheme(this.settings, 'DSH Background theme')
   }
 
   /** Import, save, and immediately apply a portable theme.
