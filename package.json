@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-prism",
   "description": "DSH Background: upload custom photo/GIF backgrounds and tune glassmorphism, typography, accent colors, aurora, and portable themes for the DSH Web GUI",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "publishConfig": {
     "access": "public"
   },
@@ -59,13 +59,13 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.1.0",
-    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-store": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-theme": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-client-store": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-client-ui-theme": "0.2.2-rc.3",
     "@deepseek-ai/dsh-invariants": "0.2.0-rc.2",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.1",

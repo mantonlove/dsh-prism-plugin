@@ -93,10 +93,23 @@
 /* ---------- Open the viewport: the frame and the conversation root paint
    the opaque base over the ambient layer, so both go transparent or the
    aurora / wallpaper never reach the eye. ---------- */
+/* The wallpaper must reach the workspace. DSH 0.2.2-rc.3's macOS frame paints
+   opaque `--dsw-alias-bg-base` on the centre and right columns from
+   `[data-platform='darwin'] .centerCol` (0,2,0), which ties with a plain
+   `[class*=]` rule and would resolve by stylesheet order alone — the `:is`
+   below lifts these to (0,3,0) so the backdrop always shows through. */
 [data-dsh-prism] [class*='frame'],
-[data-dsh-prism] [data-phase],
-[data-dsh-prism] [class*='detailsCol'] {
+[data-dsh-prism] [data-phase] {
   background: transparent;
+}
+
+[data-dsh-prism] [class*='centerCol']:is([class]),
+[data-dsh-prism] [class*='rightbarCol']:is([class]) {
+  background: transparent;
+}
+
+[data-dsh-prism] [class*='centerCol']:is([class]) {
+  border-left-color: transparent;
 }
 
 /* ---------- Floating glass surfaces. Every pane: frosted backdrop blur with
@@ -162,11 +175,25 @@
     0 8px 30px rgb(2 6 14 / 0.32);
 }
 
+/* macOS "Reduce Transparency" flattens the host's translucent surfaces to a
+   solid fill. rc.3 derives that fill from `--dsw-specific-sidebar-fill`, which
+   the skin keeps clear so the column glass is not painted twice — the result
+   would be a see-through sidebar over the wallpaper under an accessibility
+   preference that asks for the opposite. Paint the card solid there instead. */
+@media (prefers-reduced-transparency: reduce) {
+  [data-dsh-prism] [class*='sidebarCol']:is([class]) {
+    background: rgb(250 252 255 / 0.96) !important;
+  }
+
+  [data-dsh-prism] body[data-ds-dark-theme] [class*='sidebarCol']:is([class]) {
+    background: rgb(28 32 40 / 0.96) !important;
+  }
+}
+
 /* The frame's sidebar drag handle (an 8px hit strip straddling the column
    border) must stay grabbable above the floating card: the column carries
    z-index 9, so the handle out-ranks it — and its -4px centering gains the
-   card's 10px visual inset so the strip rides the card's right edge. */
-[data-dsh-prism] [class*='handle'][data-side='sidebar'] {
+   card's 10px visual inset so the strip rides the card's right edge. */[data-dsh-prism] [class*='handle'][data-side='sidebar'] {
   z-index: 10;
   margin-left: -14px;
 }

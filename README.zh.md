@@ -1,6 +1,6 @@
 # DSH Background — 自定义背景图与毛玻璃主题
 
-**DSH Background** 可以把你自己的照片或 GIF 动图上传为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI 的背景，并自由调整毛玻璃、透明度、字体、颜色与动效。v2 已适配 DSH `0.2.2-rc.1` 的设置与主题 API，仓库自带 `lib/` 预构建产物，安装插件无需执行构建。
+**DSH Background** 可以把你自己的照片或 GIF 动图上传为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI 的背景，并自由调整毛玻璃、透明度、字体、颜色与动效。v2.0.3 已在 DSH `0.2.2-rc.3` 上完成适配验证，同时保留对 `0.2.2-rc.1+` 的兼容性；仓库自带 `lib/` 预构建产物，安装插件无需执行构建。
 
 ## 安装
 
@@ -32,6 +32,7 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 ## v2 新特性
 
+- **DSH 0.2.2-rc.3 适配**：支持新版侧栏毛玻璃与卡片令牌，并让工作区背景保持透明，同时保留 rc.1 / rc.2 的旧令牌兼容。
 - **六套可视化预设**：夜色、极光、水晶、沙丘、玫瑰、森林，一键应用完整协调的外观方案。
 - **可迁移自定义主题**：最多保存 24 套命名方案，可随时应用、删除，或通过带版本号的 JSON 文件导入导出；导入前会逐项校验，重名时自动添加数字后缀，不覆盖已有方案。
 - **面向任务的工作台**：主题、玻璃、背景、字体四个标签页取代旧折叠面板，并迁移掉已被 DSH 删除的 `settings.plugin.item` 总开关卡片。

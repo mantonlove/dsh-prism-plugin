@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-prism/README.md
-README.md: 4d9da40ead8d705904870615acdf3f85f6621e3f
-README.zh.md: e85473163120c9e5d29a51332350444e2ec52635
+README.md: 24e1d05e9b7392b5f0916cb8025aff6d427b4341
+README.zh.md: 4457ca1c190de4f6ed0f72acdb7941d02a0bc24e

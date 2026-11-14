@@ -1,6 +1,6 @@
 # DSH Background — Custom Background Images & Glassmorphism
 
-**DSH Background** lets you upload your own photos or animated GIFs as the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI background, then tune glassmorphism, opacity, typography, colors, and motion. Version 2 is adapted to the DSH `0.2.2-rc.1` settings and theme APIs and ships prebuilt in `lib/`; installing the plugin does not require a build step.
+**DSH Background** lets you upload your own photos or animated GIFs as the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI background, then tune glassmorphism, opacity, typography, colors, and motion. Version 2.0.3 is tested against DSH `0.2.2-rc.3`, retains compatibility with `0.2.2-rc.1+`, and ships prebuilt in `lib/`; installing the plugin does not require a build step.
 
 ## Install
 
@@ -32,6 +32,7 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 ## What’s new in v2
 
+- **DSH 0.2.2-rc.3 compatibility:** supports the new sidebar-glass and card token family and opens the workspace columns to the backdrop, while retaining the rc.1/rc.2 token names.
 - **Six visual presets:** Night, Aurora, Crystal, Dune, Rose, and Forest apply a complete, coordinated appearance recipe.
 - **Portable custom themes:** save up to 24 named looks, apply or delete them, and exchange versioned JSON theme files. Import validates every value before applying it; duplicate names receive numeric suffixes instead of overwriting an existing look.
 - **Task-oriented studio:** Themes, Glass, Backdrop, and Type tabs replace the old accordion and the retired `settings.plugin.item` master card.

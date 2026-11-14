@@ -61,6 +61,40 @@ describe('buildTokenOverrides', () => {
     expect(token('--dsw-specific-sidebar-fill').dark).toBe('transparent')
   })
 
+  it('covers the DSH 0.2.2-rc.3 sidebar and card tokens without dropping rc.1 compatibility', () => {
+    for (const name of [
+      '--dsw-specific-sidebar-nav-item-hover',
+      '--dsw-specific-sidebar-glass-fill',
+      '--dsw-specific-sidebar-glass-hover',
+      '--dsw-specific-sidebar-glass-collapsed-hover',
+      '--dsw-alias-card-fill',
+      '--dsw-alias-card-fill-hover',
+    ]) {
+      expect(token(name).light).toContain('var(--prism-')
+      expect(token(name).dark).toContain('var(--prism-')
+    }
+    expect(token('--dsw-specific-sidebar-glass-collapsed-fill').light).toBe('transparent')
+    expect(token('--dsw-alias-border-selected').dark).toContain('var(--prism-accent-h)')
+    expect(token('--dsw-alias-hovercard-bg').dark).toContain('var(--prism-zone-overlay')
+    expect(token('--dsw-specific-file-upload-track').light).toBe('rgb(19 45 83 / 0.08)')
+  })
+
+  it('re-hangs the macOS column glass on the rc.3 tint hook', () => {
+    // The Darwin frame paints the sidebar column itself; the tint must carry
+    // the same frosted fill the column rule paints on Web.
+    expect(token('--dsw-specific-sidebar-tint').light).toContain('var(--prism-frost)')
+    expect(token('--dsw-specific-sidebar-tint').dark).toContain('rgb(34 38 47')
+    for (const name of [
+      '--dsw-specific-sidebar-wash-top',
+      '--dsw-specific-sidebar-wash-top-clear',
+      '--dsw-specific-sidebar-wash-bottom',
+      '--dsw-specific-sidebar-wash-bottom-clear',
+    ]) {
+      expect(token(name).light).toBe('transparent')
+      expect(token(name).dark).toBe('transparent')
+    }
+  })
+
   it('font families ride the knob variables', () => {
     expect(token('--dsw-font-family').dark).toContain('var(--prism-font-family)')
     expect(token('--ds-font-family-code').light).toContain('var(--prism-code-family)')

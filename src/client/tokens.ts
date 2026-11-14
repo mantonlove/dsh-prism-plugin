@@ -77,6 +77,22 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
       'rgb(148 180 220 / calc(0.10 * var(--prism-frost)))',
     ),
 
+    // DSH 0.2.2-rc.3 cards: the new deliverables / plan / schedule surfaces
+    // read their own card tokens rather than bg-layer-2, so they join the
+    // same glass recipe instead of falling back to opaque neutral slabs.
+    '--dsw-alias-card-fill': pair(
+      'rgb(255 255 255 / calc(0.78 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(34 38 47 / calc(0.78 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+    ),
+    '--dsw-alias-card-fill-hover': pair(
+      'rgb(255 255 255 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(34 38 47 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+    ),
+    '--dsw-alias-card-tile-fill': pair(
+      'rgb(255 255 255 / calc(0.55 * var(--prism-frost)))',
+      'rgb(255 255 255 / calc(0.06 * var(--prism-frost)))',
+    ),
+
     // Borders: accent-tinted hairlines scaled by contrast.
     '--dsw-alias-border-l1': pair(
       'rgb(19 45 83 / calc(0.05 + 0.07 * 0.5))',
@@ -106,6 +122,7 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
       'rgb(19 45 83 / 0.08)',
       'rgb(148 180 220 / calc(0.12 * var(--prism-frost)))',
     ),
+    '--dsw-alias-border-selected': accentColor(),
 
     // Brand and business accents: the accent hue knob.
     '--dsw-alias-brand-primary': accentColor(),
@@ -117,6 +134,7 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
       'hsl(var(--prism-accent-h) var(--prism-accent-s) 90%)',
       'hsl(var(--prism-accent-h) var(--prism-accent-s) 22%)',
     ),
+    '--dsw-alias-trajectory-accent': accentColor(),
 
     // Buttons.
     '--dsw-alias-button-primary-fill': accentColor(),
@@ -232,15 +250,44 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
     // Specific surfaces: sidebar turns transparent (the column glass lives in
     // the layer stylesheet), the rest ride their zone knobs.
     '--dsw-specific-sidebar-fill': pair('transparent', 'transparent'),
+    // rc.3's macOS frame paints the sidebar column itself with
+    // `gradient(wash-top … wash-bottom), sidebar-tint` at a specificity the
+    // skin stylesheet cannot out-rank, so the glass is re-hung on these host
+    // hooks: the washes go clear and the tint carries the same frosted fill
+    // the column rule paints everywhere else. Darwin and Web then agree.
+    '--dsw-specific-sidebar-tint': pair(
+      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-sidebar, 1)))',
+      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-sidebar, 1)))',
+    ),
+    '--dsw-specific-sidebar-wash-top': pair('transparent', 'transparent'),
+    '--dsw-specific-sidebar-wash-top-clear': pair('transparent', 'transparent'),
+    '--dsw-specific-sidebar-wash-bottom': pair('transparent', 'transparent'),
+    '--dsw-specific-sidebar-wash-bottom-clear': pair('transparent', 'transparent'),
     '--dsw-specific-sidebar-nav-item-active': pair(
       'hsl(var(--prism-accent-h) var(--prism-accent-s) 92% / calc(0.9 * var(--prism-frost)))',
       'hsl(var(--prism-accent-h) var(--prism-accent-s) 26% / calc(0.9 * var(--prism-frost)))',
     ),
+    // rc.3 replaced the nav hover token with the sidebar-glass family; keep
+    // the rc.1/rc.2 name for backwards compatibility and drive both from the
+    // same accent-tinted glass recipe.
     '--dsw-specific-sidebar-nav-item-hover': pair(
       'hsl(var(--prism-accent-h) var(--prism-accent-s) 94% / calc(0.7 * var(--prism-frost)))',
       'hsl(var(--prism-accent-h) var(--prism-accent-s) 22% / calc(0.7 * var(--prism-frost)))',
     ),
     '--dsw-specific-sidebar-nav-item-active-accent': accentColor(),
+    '--dsw-specific-sidebar-glass-fill': pair(
+      'hsl(var(--prism-accent-h) var(--prism-accent-s) 96% / calc(0.45 * var(--prism-frost)))',
+      'hsl(var(--prism-accent-h) var(--prism-accent-s) 18% / calc(0.45 * var(--prism-frost)))',
+    ),
+    '--dsw-specific-sidebar-glass-hover': pair(
+      'hsl(var(--prism-accent-h) var(--prism-accent-s) 94% / calc(0.7 * var(--prism-frost)))',
+      'hsl(var(--prism-accent-h) var(--prism-accent-s) 22% / calc(0.7 * var(--prism-frost)))',
+    ),
+    '--dsw-specific-sidebar-glass-collapsed-fill': pair('transparent', 'transparent'),
+    '--dsw-specific-sidebar-glass-collapsed-hover': pair(
+      'hsl(var(--prism-accent-h) var(--prism-accent-s) 94% / calc(0.7 * var(--prism-frost)))',
+      'hsl(var(--prism-accent-h) var(--prism-accent-s) 22% / calc(0.7 * var(--prism-frost)))',
+    ),
     '--dsw-specific-bubble': pair(
       'rgb(255 255 255 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-bubble, 1)))',
       'rgb(34 38 47 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-bubble, 1)))',
@@ -253,11 +300,16 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
       'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
       'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
     ),
+    '--dsw-specific-file-upload-track': pair('rgb(19 45 83 / 0.08)', 'rgb(148 180 220 / 0.12)'),
     '--dsw-specific-login-input': pair(
       'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
       'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
     ),
     '--dsw-specific-menu': pair(
+      'rgb(255 255 255 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
+      'rgb(34 38 47 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
+    ),
+    '--dsw-alias-hovercard-bg': pair(
       'rgb(255 255 255 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
       'rgb(34 38 47 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
     ),
