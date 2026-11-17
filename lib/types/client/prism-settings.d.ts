@@ -78,6 +78,10 @@ export interface PrismSettings {
     wallpaperDimDark: number[];
     /** Auto-analyzed wallpaper luminance for the light scheme. */
     wallpaperDimLight: number[];
+    /** Per-image carousel membership for the dark scheme (false = skipped). */
+    wallpaperCycleDark: boolean[];
+    /** Per-image carousel membership for the light scheme (false = skipped). */
+    wallpaperCycleLight: boolean[];
     /** Wallpaper rotation interval, seconds (used while looping). */
     wallpaperInterval: number;
     /** Whether wallpapers rotate automatically (false = the pinned image). */
@@ -106,7 +110,7 @@ export declare const PRISM_THEME_LIMIT_ERROR = "prism-theme-limit";
 /** Stable error raised when a library edit cannot be durably persisted. */
 export declare const PRISM_THEME_PERSIST_ERROR = "prism-theme-persist-failed";
 /** Portable appearance values: no wallpaper bytes, rotation state, or master switch. */
-export type PrismThemeValues = Omit<PrismSettings, 'enabled' | 'customThemes' | 'background' | 'wallpaperDark' | 'wallpaperLight' | 'wallpaperDimDark' | 'wallpaperDimLight' | 'wallpaperInterval' | 'wallpaperLoop' | 'wallpaperPinnedDark' | 'wallpaperPinnedLight' | 'wallpaperBlur' | 'wallpaperFrost'>;
+export type PrismThemeValues = Omit<PrismSettings, 'enabled' | 'customThemes' | 'background' | 'wallpaperDark' | 'wallpaperLight' | 'wallpaperDimDark' | 'wallpaperDimLight' | 'wallpaperCycleDark' | 'wallpaperCycleLight' | 'wallpaperInterval' | 'wallpaperLoop' | 'wallpaperPinnedDark' | 'wallpaperPinnedLight' | 'wallpaperBlur' | 'wallpaperFrost'>;
 /** One user-created theme stored alongside the durable settings document. */
 export interface PrismCustomTheme {
     /** Stable local identifier. */
@@ -218,6 +222,15 @@ export declare const RANGES: Readonly<{
         max: number;
     };
 }>;
+/**
+ * Indices that take part in the carousel, in list order.
+ * A flag that is missing (array shorter than the wallpaper list) counts as
+ * included, so appending an image never silently drops it from the rotation.
+ * @param count - number of wallpapers in the scheme's list.
+ * @param flags - stored carousel membership flags.
+ * @returns the participating indices (empty when the user excluded every image).
+ */
+export declare function carouselIndices(count: number, flags: readonly boolean[] | undefined): number[];
 /**
  * Read the persisted document, folding defaults over partial storage and
  * migrating legacy shapes (single-wallpaper strings, retired zone bundles,

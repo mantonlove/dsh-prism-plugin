@@ -34,6 +34,8 @@ function payload(overrides: Partial<PrismSettingsPayload> = {}): PrismSettingsPa
     wallpaperLight: [],
     wallpaperDimDark: [],
     wallpaperDimLight: [],
+    wallpaperCycleDark: [],
+    wallpaperCycleLight: [],
     wallpaperInterval: 30,
     wallpaperLoop: false,
     wallpaperPinnedDark: 0,

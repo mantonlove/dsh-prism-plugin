@@ -28,6 +28,8 @@ export interface PrismAppearanceInjected {
     setWallpaperFrost: (value: number) => void;
     pickWallpaper: (scheme: 'dark' | 'light', file: File) => Promise<WallpaperError | null>;
     clearWallpaper: (scheme: 'dark' | 'light', index: number) => void;
+    setWallpaperCycle: (scheme: 'dark' | 'light', index: number, include: boolean) => void;
+    setWallpaperCycleAll: (scheme: 'dark' | 'light', include: boolean) => void;
     applyPreset: (preset: PrismPreset) => void;
     saveTheme: (name: string) => string | null;
     applyCustomTheme: (id: string) => void;

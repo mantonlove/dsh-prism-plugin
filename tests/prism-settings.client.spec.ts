@@ -2,7 +2,7 @@
 /** Durable settings document: defaults, partial merge, migrations, round-trips. */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  isPrismStorageKey, PRISM_SETTINGS_KEY, readSettings, SETTINGS_DEFAULTS, writeSettings,
+  carouselIndices, isPrismStorageKey, PRISM_SETTINGS_KEY, readSettings, SETTINGS_DEFAULTS, writeSettings,
 } from '../src/client/prism-settings.ts'
 
 beforeEach(() => {
@@ -70,6 +70,44 @@ describe('readSettings', () => {
   it('returns the defaults for unreadable documents', () => {
     localStorage.setItem(PRISM_SETTINGS_KEY, '{not json')
     expect(readSettings().material).toBe('frosted')
+  })
+})
+
+describe('wallpaper carousel membership', () => {
+  it('treats documents written before carousel selection as fully included', () => {
+    localStorage.setItem(PRISM_SETTINGS_KEY, JSON.stringify({
+      wallpaperDark: ['data:image/jpeg;base64,AAA', 'data:image/jpeg;base64,BBB'],
+      wallpaperLight: ['data:image/jpeg;base64,CCC'],
+    }))
+    const settings = readSettings()
+    expect(settings.wallpaperCycleDark).toEqual([true, true])
+    expect(settings.wallpaperCycleLight).toEqual([true])
+  })
+
+  it('pads and truncates stored membership to the wallpaper count', () => {
+    localStorage.setItem(PRISM_SETTINGS_KEY, JSON.stringify({
+      wallpaperDark: ['data:image/jpeg;base64,AAA', 'data:image/jpeg;base64,BBB', 'data:image/jpeg;base64,CCC'],
+      wallpaperCycleDark: [false],
+    }))
+    expect(readSettings().wallpaperCycleDark).toEqual([false, true, true])
+
+    localStorage.setItem(PRISM_SETTINGS_KEY, JSON.stringify({
+      wallpaperDark: ['data:image/jpeg;base64,AAA'],
+      wallpaperCycleDark: [true, false, false],
+    }))
+    expect(readSettings().wallpaperCycleDark).toEqual([true])
+  })
+
+  it('round-trips an explicit exclusion', () => {
+    writeSettings({ ...SETTINGS_DEFAULTS, wallpaperDark: ['data:image/jpeg;base64,AAA', 'data:image/jpeg;base64,BBB'], wallpaperCycleDark: [true, false] })
+    expect(readSettings().wallpaperCycleDark).toEqual([true, false])
+  })
+
+  it('lists participating indices in order and skips explicit exclusions', () => {
+    expect(carouselIndices(4, [true, false, true, false])).toEqual([0, 2])
+    expect(carouselIndices(3, undefined)).toEqual([0, 1, 2])
+    expect(carouselIndices(3, [false])).toEqual([1, 2])
+    expect(carouselIndices(0, [])).toEqual([])
   })
 })
 

@@ -23,6 +23,26 @@ function layerWithThemes(count: number): { layer: PrismLayer, update: ReturnType
   return { layer, update }
 }
 
+/** Exercise the wallpaper commands with a fixed list per scheme. */
+function layerWithWallpapers(dark: string[]): { layer: PrismLayer, update: ReturnType<typeof vi.fn> } {
+  const settings: PrismSettings = {
+    ...SETTINGS_DEFAULTS,
+    wallpaperDark: [...dark],
+    wallpaperLight: ['l1', 'l2'],
+    wallpaperDimDark: dark.map(() => 0.5),
+    wallpaperDimLight: [0.5, 0.5],
+    wallpaperCycleDark: dark.map(() => true),
+    wallpaperCycleLight: [true, true],
+  }
+  const layer = Object.create(PrismLayer.prototype) as PrismLayer
+  Object.assign(layer, { settings, dark: true })
+  const update = vi.fn((patch: Partial<PrismSettings>) => {
+    Object.assign(layer, { settings: { ...layer.getSettings(), ...patch } })
+  })
+  Object.assign(layer, { update })
+  return { layer, update }
+}
+
 afterEach(() => {
   vi.restoreAllMocks()
   localStorage.clear()
@@ -74,6 +94,68 @@ describe('PrismLayer saved-theme limits and persistence', () => {
     expect(patch.blur).toBe(39)
     expect(patch.customThemes?.map(theme => theme.name)).toEqual(['Theme 0', 'Theme 0 (2)'])
     expect(patch.customThemes?.at(-1)?.values.blur).toBe(39)
+  })
+
+  it('toggles one image in and out of the carousel without dropping the rest', () => {
+    const { layer, update } = layerWithWallpapers(['a', 'b', 'c'])
+    layer.setWallpaperCycle('dark', 1, false)
+    expect(update.mock.calls.at(-1)?.[0]).toEqual({ wallpaperCycleDark: [true, false, true] })
+    layer.setWallpaperCycle('dark', 1, true)
+    expect(update.mock.calls.at(-1)?.[0]).toEqual({ wallpaperCycleDark: [true, true, true] })
+  })
+
+  it('normalizes a legacy membership array before the first explicit toggle', () => {
+    const { layer, update } = layerWithWallpapers(['a', 'b', 'c'])
+    Object.assign(layer, { settings: { ...layer.getSettings(), wallpaperCycleDark: [] } })
+    layer.setWallpaperCycle('dark', 2, false)
+    expect(update.mock.calls.at(-1)?.[0]).toEqual({ wallpaperCycleDark: [true, true, false] })
+  })
+
+  it('selects or excludes every image of one scheme at once', () => {
+    const { layer, update } = layerWithWallpapers(['a', 'b'])
+    layer.setWallpaperCycleAll('light', false)
+    expect(update.mock.calls.at(-1)?.[0]).toEqual({ wallpaperCycleLight: [false, false] })
+    layer.setWallpaperCycleAll('light', true)
+    expect(update.mock.calls.at(-1)?.[0]).toEqual({ wallpaperCycleLight: [true, true] })
+  })
+
+  it('ignores carousel edits for an out-of-range index', () => {
+    const { layer, update } = layerWithWallpapers(['a'])
+    layer.setWallpaperCycle('dark', 3, false)
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('rotates only through selected images and never blanks the backdrop', () => {
+    const { layer } = layerWithWallpapers(['a', 'b', 'c'])
+    const index = (layer as unknown as { wallpaperIndex(urls: string[]): number }).wallpaperIndex.bind(layer)
+    Object.assign(layer, {
+      settings: { ...layer.getSettings(), wallpaperLoop: true, wallpaperInterval: 10, wallpaperCycleDark: [true, false, true] },
+    })
+    vi.spyOn(Date, 'now').mockReturnValue(0)
+    expect(index(['a', 'b', 'c'])).toBe(0)
+    vi.spyOn(Date, 'now').mockReturnValue(10_000)
+    expect(index(['a', 'b', 'c'])).toBe(2)
+
+    Object.assign(layer, { settings: { ...layer.getSettings(), wallpaperCycleDark: [false, false, true] } })
+    expect(index(['a', 'b', 'c'])).toBe(2)
+
+    Object.assign(layer, {
+      settings: { ...layer.getSettings(), wallpaperCycleDark: [false, false, false], wallpaperPinnedDark: 1 },
+    })
+    expect(index(['a', 'b', 'c'])).toBe(1)
+  })
+
+  it('keeps membership aligned when an image is removed', () => {
+    const { layer, update } = layerWithWallpapers(['a', 'b', 'c'])
+    Object.assign(layer, {
+      settings: { ...layer.getSettings(), wallpaperDimDark: [0.1, 0.2, 0.3], wallpaperCycleDark: [true, false, true] },
+    })
+    layer.clearWallpaper('dark', 1)
+    expect(update.mock.calls.at(-1)?.[0]).toEqual({
+      wallpaperDark: ['a', 'c'],
+      wallpaperDimDark: [0.1, 0.3],
+      wallpaperCycleDark: [true, true],
+    })
   })
 
   it('flushes a library save before reporting success', () => {

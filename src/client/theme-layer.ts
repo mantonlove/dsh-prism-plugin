@@ -27,7 +27,7 @@ import { advanceSpring, clampValue, createSpring, springSettled, type SpringStat
 import { analyzeLuminance, readWallpaper, veilAlpha, type WallpaperError } from './wallpaper.ts'
 import { makeCustomTheme, normalizeThemeValues, parseThemeDocument, serializeTheme } from './theme-io.ts'
 import {
-  CODE_FONT_CHOICES, FONT_CHOICES, MATERIALS, MAX_CUSTOM_THEMES, PRESETS, PRISM_THEME_LIMIT_ERROR, PRISM_THEME_PERSIST_ERROR, RANGES, readSettings, writeSettings,
+  CODE_FONT_CHOICES, FONT_CHOICES, MATERIALS, MAX_CUSTOM_THEMES, PRESETS, PRISM_THEME_LIMIT_ERROR, PRISM_THEME_PERSIST_ERROR, RANGES, carouselIndices, readSettings, writeSettings,
   type PrismFontChoice, type PrismMaterial, type PrismPreset, type PrismSettings, type PrismZones,
 } from './prism-settings.ts'
 
@@ -354,12 +354,15 @@ export class PrismLayer {
       this.update({
         wallpaperDark: [...this.settings.wallpaperDark, result],
         wallpaperDimDark: [...this.settings.wallpaperDimDark, luminance],
+        // A fresh upload joins the carousel; exclusion is always an explicit act.
+        wallpaperCycleDark: [...this.settings.wallpaperCycleDark, true],
         background: 'wallpaper',
       })
     } else {
       this.update({
         wallpaperLight: [...this.settings.wallpaperLight, result],
         wallpaperDimLight: [...this.settings.wallpaperDimLight, luminance],
+        wallpaperCycleLight: [...this.settings.wallpaperCycleLight, true],
         background: 'wallpaper',
       })
     }
@@ -371,21 +374,55 @@ export class PrismLayer {
     if (scheme === 'dark') {
       const urls = this.settings.wallpaperDark.filter((_, i) => i !== index)
       const dims = this.settings.wallpaperDimDark.filter((_, i) => i !== index)
-      this.update({ wallpaperDark: urls, wallpaperDimDark: dims })
+      const cycles = this.settings.wallpaperCycleDark.filter((_, i) => i !== index)
+      this.update({ wallpaperDark: urls, wallpaperDimDark: dims, wallpaperCycleDark: cycles })
     } else {
       const urls = this.settings.wallpaperLight.filter((_, i) => i !== index)
       const dims = this.settings.wallpaperDimLight.filter((_, i) => i !== index)
-      this.update({ wallpaperLight: urls, wallpaperDimLight: dims })
+      const cycles = this.settings.wallpaperCycleLight.filter((_, i) => i !== index)
+      this.update({ wallpaperLight: urls, wallpaperDimLight: dims, wallpaperCycleLight: cycles })
     }
   }
 
-  /** Toggle automatic rotation (on = cycle all images; off = pinned image). */
+  /** Toggle automatic rotation (on = cycle the selected images; off = pinned image). */
   setWallpaperLoop(loop: boolean): void {
     if (loop) {
       this.update({ wallpaperLoop: true, wallpaperInterval: Math.max(10, this.settings.wallpaperInterval) })
     } else {
       this.update({ wallpaperLoop: false })
     }
+  }
+
+  /**
+   * Include or exclude one image from the automatic carousel.
+   * Membership is independent of the loop switch, so a selection made while
+   * the carousel is off still applies the next time it is turned on.
+   * @param scheme - which palette's list to edit.
+   * @param index - rotation-list index.
+   * @param include - true to rotate through it, false to skip it.
+   */
+  setWallpaperCycle(scheme: 'dark' | 'light', index: number, include: boolean): void {
+    const urls = scheme === 'dark' ? this.settings.wallpaperDark : this.settings.wallpaperLight
+    if (index < 0 || index >= urls.length) return
+    const flags = scheme === 'dark' ? this.settings.wallpaperCycleDark : this.settings.wallpaperCycleLight
+    // Normalize first so a legacy document's implicit "everything included"
+    // survives the first explicit toggle.
+    const next = urls.map((_, slot) => flags[slot] !== false)
+    next[index] = include
+    if (scheme === 'dark') this.update({ wallpaperCycleDark: next })
+    else this.update({ wallpaperCycleLight: next })
+  }
+
+  /**
+   * Include or exclude every image of one scheme at once.
+   * @param scheme - which palette's list to edit.
+   * @param include - true to rotate through all, false to rotate through none.
+   */
+  setWallpaperCycleAll(scheme: 'dark' | 'light', include: boolean): void {
+    const urls = scheme === 'dark' ? this.settings.wallpaperDark : this.settings.wallpaperLight
+    const next = urls.map(() => include)
+    if (scheme === 'dark') this.update({ wallpaperCycleDark: next })
+    else this.update({ wallpaperCycleLight: next })
   }
 
   /** Pin one rotation-list image as the fixed background (stops the loop). */
@@ -441,13 +478,25 @@ export class PrismLayer {
     this.applyWallpaperSource()
   }
 
-  /** The active index: wall-clock rotation while looping, the pinned image
-   *  otherwise (clicking a thumbnail pins it and stops the loop). */
+  /** The scheme's carousel membership flags (missing slots count as included). */
+  private wallpaperCycle(): boolean[] {
+    return this.dark ? this.settings.wallpaperCycleDark : this.settings.wallpaperCycleLight
+  }
+
+  /** The active index: wall-clock rotation across the selected images while
+   *  looping, the pinned image otherwise (clicking a thumbnail pins it and
+   *  stops the loop). Excluding every image falls back to the pinned one
+   *  instead of blanking the backdrop. */
   private wallpaperIndex(urls: string[]): number {
     const s = this.settings
     if (urls.length === 0) return 0
-    if (s.wallpaperLoop && s.wallpaperInterval > 0 && urls.length > 1) {
-      return Math.floor(Date.now() / 1000 / s.wallpaperInterval) % urls.length
+    const carousel = carouselIndices(urls.length, this.wallpaperCycle())
+    if (s.wallpaperLoop && s.wallpaperInterval > 0 && carousel.length > 1) {
+      const slot = Math.floor(Date.now() / 1000 / s.wallpaperInterval) % carousel.length
+      return carousel[slot] ?? carousel[0] ?? 0
+    }
+    if (s.wallpaperLoop && s.wallpaperInterval > 0 && carousel.length === 1) {
+      return carousel[0] ?? 0
     }
     const pinned = this.dark ? s.wallpaperPinnedDark : s.wallpaperPinnedLight
     return Math.min(urls.length - 1, Math.max(0, pinned))
@@ -485,7 +534,8 @@ export class PrismLayer {
       this.rotateTimer = undefined
     }
     const interval = this.settings.wallpaperInterval
-    if (!this.settings.wallpaperLoop || this.settings.background !== 'wallpaper' || urls.length <= 1 || interval <= 0) return
+    const carouselCount = carouselIndices(urls.length, this.wallpaperCycle()).length
+    if (!this.settings.wallpaperLoop || this.settings.background !== 'wallpaper' || carouselCount <= 1 || interval <= 0) return
     const ms = interval * 1000
     const wait = ms - (Date.now() % ms) + 50
     this.rotateTimer = window.setTimeout(() => {

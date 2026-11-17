@@ -80,6 +80,10 @@ export interface PrismSettings {
   wallpaperDimDark: number[]
   /** Auto-analyzed wallpaper luminance for the light scheme. */
   wallpaperDimLight: number[]
+  /** Per-image carousel membership for the dark scheme (false = skipped). */
+  wallpaperCycleDark: boolean[]
+  /** Per-image carousel membership for the light scheme (false = skipped). */
+  wallpaperCycleLight: boolean[]
   /** Wallpaper rotation interval, seconds (used while looping). */
   wallpaperInterval: number
   /** Whether wallpapers rotate automatically (false = the pinned image). */
@@ -116,6 +120,7 @@ export const PRISM_THEME_PERSIST_ERROR = 'prism-theme-persist-failed'
 export type PrismThemeValues = Omit<PrismSettings,
   | 'enabled' | 'customThemes' | 'background'
   | 'wallpaperDark' | 'wallpaperLight' | 'wallpaperDimDark' | 'wallpaperDimLight'
+  | 'wallpaperCycleDark' | 'wallpaperCycleLight'
   | 'wallpaperInterval' | 'wallpaperLoop' | 'wallpaperPinnedDark' | 'wallpaperPinnedLight'
   | 'wallpaperBlur' | 'wallpaperFrost'>
 
@@ -205,6 +210,8 @@ export const SETTINGS_DEFAULTS: PrismSettings = Object.freeze({
   wallpaperLight: [],
   wallpaperDimDark: [],
   wallpaperDimLight: [],
+  wallpaperCycleDark: [],
+  wallpaperCycleLight: [],
   wallpaperInterval: 30,
   wallpaperLoop: false,
   wallpaperPinnedDark: 0,
@@ -282,6 +289,35 @@ function dimList(value: unknown, fallbackCount: number): number[] {
   const list = Array.isArray(value) ? value.filter((item): item is number => typeof item === 'number') : []
   const out = list.slice(0, fallbackCount)
   while (out.length < fallbackCount) out.push(0.5)
+  return out
+}
+
+/**
+ * Normalize one carousel-membership slot (mirrors the wallpaper list length).
+ * Documents written before carousel selection existed carry no slot at all:
+ * every stored image then defaults to included, which preserves the retired
+ * "rotate the whole group" behaviour until the user excludes something.
+ */
+function cycleList(value: unknown, count: number): boolean[] {
+  const list = Array.isArray(value) ? value : []
+  const out: boolean[] = []
+  for (let index = 0; index < count; index += 1) out.push(list[index] !== false)
+  return out
+}
+
+/**
+ * Indices that take part in the carousel, in list order.
+ * A flag that is missing (array shorter than the wallpaper list) counts as
+ * included, so appending an image never silently drops it from the rotation.
+ * @param count - number of wallpapers in the scheme's list.
+ * @param flags - stored carousel membership flags.
+ * @returns the participating indices (empty when the user excluded every image).
+ */
+export function carouselIndices(count: number, flags: readonly boolean[] | undefined): number[] {
+  const out: number[] = []
+  for (let index = 0; index < count; index += 1) {
+    if (flags?.[index] !== false) out.push(index)
+  }
   return out
 }
 
@@ -364,6 +400,8 @@ export function readSettings(): PrismSettings {
       wallpaperLight,
       wallpaperDimDark: dimList(parsed.wallpaperDimDark, wallpaperDark.length),
       wallpaperDimLight: dimList(parsed.wallpaperDimLight, wallpaperLight.length),
+      wallpaperCycleDark: cycleList(parsed.wallpaperCycleDark, wallpaperDark.length),
+      wallpaperCycleLight: cycleList(parsed.wallpaperCycleLight, wallpaperLight.length),
       wallpaperInterval: numberField(parsed.wallpaperInterval, SETTINGS_DEFAULTS.wallpaperInterval),
       wallpaperLoop: parsed.wallpaperLoop === true,
       wallpaperPinnedDark: numberField(parsed.wallpaperPinnedDark, 0),

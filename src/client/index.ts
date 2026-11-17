@@ -64,6 +64,8 @@ export function apply(ctx: ClientContext): void {
       setWallpaperFrost: (wallpaperFrost: number) => { layer.update({ wallpaperFrost }) },
       pickWallpaper: (scheme, file) => layer.setWallpaperFromFile(scheme, file),
       clearWallpaper: (scheme, index) => { layer.clearWallpaper(scheme, index) },
+      setWallpaperCycle: (scheme, index, include) => { layer.setWallpaperCycle(scheme, index, include) },
+      setWallpaperCycleAll: (scheme, include) => { layer.setWallpaperCycleAll(scheme, include) },
       applyPreset: (preset: PrismPreset) => { layer.applyPreset(preset) },
       saveTheme: (name) => layer.saveTheme(name),
       applyCustomTheme: (id) => { layer.applyCustomTheme(id) },

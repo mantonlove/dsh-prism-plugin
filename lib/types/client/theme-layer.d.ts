@@ -91,8 +91,23 @@ export declare class PrismLayer {
     setWallpaperFromFile(scheme: 'dark' | 'light', file: File): Promise<WallpaperError | null>;
     /** Remove one scheme's wallpaper at a rotation-list index. */
     clearWallpaper(scheme: 'dark' | 'light', index: number): void;
-    /** Toggle automatic rotation (on = cycle all images; off = pinned image). */
+    /** Toggle automatic rotation (on = cycle the selected images; off = pinned image). */
     setWallpaperLoop(loop: boolean): void;
+    /**
+     * Include or exclude one image from the automatic carousel.
+     * Membership is independent of the loop switch, so a selection made while
+     * the carousel is off still applies the next time it is turned on.
+     * @param scheme - which palette's list to edit.
+     * @param index - rotation-list index.
+     * @param include - true to rotate through it, false to skip it.
+     */
+    setWallpaperCycle(scheme: 'dark' | 'light', index: number, include: boolean): void;
+    /**
+     * Include or exclude every image of one scheme at once.
+     * @param scheme - which palette's list to edit.
+     * @param include - true to rotate through all, false to rotate through none.
+     */
+    setWallpaperCycleAll(scheme: 'dark' | 'light', include: boolean): void;
     /** Pin one rotation-list image as the fixed background (stops the loop). */
     pinWallpaper(scheme: 'dark' | 'light', index: number): void;
     /** Mount every layer-owned effect. */
@@ -101,8 +116,12 @@ export declare class PrismLayer {
     private unmount;
     /** Discrete (non-damped) applications: material, fonts, backdrop source, wallpaper. */
     private applyDiscrete;
-    /** The active index: wall-clock rotation while looping, the pinned image
-     *  otherwise (clicking a thumbnail pins it and stops the loop). */
+    /** The scheme's carousel membership flags (missing slots count as included). */
+    private wallpaperCycle;
+    /** The active index: wall-clock rotation across the selected images while
+     *  looping, the pinned image otherwise (clicking a thumbnail pins it and
+     *  stops the loop). Excluding every image falls back to the pinned one
+     *  instead of blanking the backdrop. */
     private wallpaperIndex;
     /** Point the wallpaper layer at the active scheme's rotating image. */
     private applyWallpaperSource;

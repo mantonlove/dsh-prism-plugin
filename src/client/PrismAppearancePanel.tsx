@@ -50,6 +50,8 @@ export interface PrismAppearanceInjected {
   setWallpaperFrost: (value: number) => void
   pickWallpaper: (scheme: 'dark' | 'light', file: File) => Promise<WallpaperError | null>
   clearWallpaper: (scheme: 'dark' | 'light', index: number) => void
+  setWallpaperCycle: (scheme: 'dark' | 'light', index: number, include: boolean) => void
+  setWallpaperCycleAll: (scheme: 'dark' | 'light', include: boolean) => void
   applyPreset: (preset: PrismPreset) => void
   saveTheme: (name: string) => string | null
   applyCustomTheme: (id: string) => void
@@ -149,6 +151,7 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
     t, setEnabled, setMaterial, setBlur, setFrost, setBgBrightness, setFontScale, setFontChoice,
     setCustomFont, setZone, setInkLightColor, setInkDarkColor, setAccentColor, setBgColor, setAccentOpacity, setMotion, setBackground,
     setWallpaperInterval, setWallpaperLoop, pinWallpaper, setWallpaperBlur, setWallpaperFrost, pickWallpaper, clearWallpaper,
+    setWallpaperCycle, setWallpaperCycleAll,
     applyPreset, saveTheme, applyCustomTheme, deleteCustomTheme, exportTheme, importTheme, resetZones, reset, useStore,
   } = props
   const enabled = useStore(s => s.enabled)
@@ -179,6 +182,8 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
   const wallpaperLight = useStore(s => s.wallpaperLight)
   const wallpaperInterval = useStore(s => s.wallpaperInterval)
   const wallpaperLoop = useStore(s => s.wallpaperLoop)
+  const wallpaperCycleDark = useStore(s => s.wallpaperCycleDark)
+  const wallpaperCycleLight = useStore(s => s.wallpaperCycleLight)
   const wallpaperPinnedDark = useStore(s => s.wallpaperPinnedDark)
   const wallpaperPinnedLight = useStore(s => s.wallpaperPinnedLight)
   const wallpaperBlur = useStore(s => s.wallpaperBlur)
@@ -271,6 +276,9 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
 
   const wallpaperRows = (scheme: 'dark' | 'light', urls: string[], labelKey: PrismLocaleKey) => {
     const pinned = scheme === 'dark' ? wallpaperPinnedDark : wallpaperPinnedLight
+    const cycles = scheme === 'dark' ? wallpaperCycleDark : wallpaperCycleLight
+    const included = urls.reduce((count, _url, index) => (cycles[index] === false ? count : count + 1), 0)
+    const everySelected = urls.length > 0 && included === urls.length
     return (
       <div className={css.wallpaperList} key={scheme}>
         <div className={css.wallpaperHeader}>
@@ -280,29 +288,57 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
           </PrismButton>
         </div>
         {urls.length === 0 ? <div className={css.wallpaperEmpty}>{t('prism.wallpaperEmpty')}</div> : (
-          <div className={css.wallpaperItems}>
-            {urls.map((url, index) => (
-              <div className={css.wallpaperRow} key={`${scheme}-${String(index)}`}>
-                <button
-                  type="button"
-                  className={!wallpaperLoop && pinned === index ? css.wallpaperThumbActive : css.wallpaperThumbButton}
-                  aria-label={`${t('prism.wallpaperPin')} · ${t(labelKey)} ${String(index + 1)}`}
-                  aria-pressed={!wallpaperLoop && pinned === index}
-                  title={t('prism.wallpaperPinHint')}
-                  onClick={() => { pinWallpaper(scheme, index) }}
-                >
-                  <img className={css.wallpaperThumb} src={url} alt="" />
-                  {!wallpaperLoop && pinned === index && <span className={css.wallpaperPinned}>✓</span>}
-                </button>
-                <button
-                  type="button"
-                  className={css.wallpaperDelete}
-                  aria-label={`${t('prism.deleteWallpaper')} · ${t(labelKey)} ${String(index + 1)}`}
-                  onClick={() => { clearWallpaper(scheme, index) }}
-                >×</button>
-              </div>
-            ))}
-          </div>
+          <>
+            <div className={css.wallpaperCycleBar}>
+              <span className={css.wallpaperCycleCount}>
+                {t('prism.cycleCount')} {String(included)}/{String(urls.length)}
+              </span>
+              <button
+                type="button"
+                className={css.wallpaperCycleAll}
+                aria-label={`${t('prism.cycleAll')} · ${t(labelKey)}`}
+                aria-pressed={everySelected}
+                onClick={() => { setWallpaperCycleAll(scheme, !everySelected) }}
+              >{t('prism.cycleAll')}</button>
+            </div>
+            <div className={css.wallpaperItems}>
+              {urls.map((url, index) => {
+                const inCycle = cycles[index] !== false
+                return (
+                  <div className={inCycle ? css.wallpaperRow : `${css.wallpaperRow} ${css.wallpaperRowSkipped}`} key={`${scheme}-${String(index)}`}>
+                    <button
+                      type="button"
+                      className={!wallpaperLoop && pinned === index ? css.wallpaperThumbActive : css.wallpaperThumbButton}
+                      aria-label={`${t('prism.wallpaperPin')} · ${t(labelKey)} ${String(index + 1)}`}
+                      aria-pressed={!wallpaperLoop && pinned === index}
+                      title={t('prism.wallpaperPinHint')}
+                      onClick={() => { pinWallpaper(scheme, index) }}
+                    >
+                      <img className={css.wallpaperThumb} src={url} alt="" />
+                      {!wallpaperLoop && pinned === index && <span className={css.wallpaperPinned}>✓</span>}
+                    </button>
+                    <button
+                      type="button"
+                      className={inCycle ? css.wallpaperCycleOn : css.wallpaperCycleOff}
+                      aria-label={`${t('prism.cycleToggle')} · ${t(labelKey)} ${String(index + 1)}`}
+                      aria-pressed={inCycle}
+                      title={t('prism.cycleToggleHint')}
+                      onClick={() => { setWallpaperCycle(scheme, index, !inCycle) }}
+                    >{inCycle ? t('prism.cycleOn') : t('prism.cycleOff')}</button>
+                    <button
+                      type="button"
+                      className={css.wallpaperDelete}
+                      aria-label={`${t('prism.deleteWallpaper')} · ${t(labelKey)} ${String(index + 1)}`}
+                      onClick={() => { clearWallpaper(scheme, index) }}
+                    >×</button>
+                  </div>
+                )
+              })}
+            </div>
+            {included === 0 && (
+              <p className={css.wallpaperWarn} role="status">{t('prism.cycleEmpty')}</p>
+            )}
+          </>
         )}
         {wallpaperError?.scheme === scheme && <div className={css.error} role="alert">{wallpaperError.message}</div>}
       </div>

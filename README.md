@@ -43,7 +43,7 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 - Clear, frosted, and velvet materials; blur and global frost; six independent zone opacities for the base, sidebar, cards, inputs, overlays, and bubbles.
 - Hex and color-picker controls for the accent, backdrop, and light/dark text colors.
-- **Custom background images:** upload your own photos or animated GIFs into separate light/dark playlists, with fixed/loop playback and manage mode.
+- **Custom background images:** upload your own photos or animated GIFs into separate light/dark playlists; switch between fixed and automatic playback, and choose image by image which ones the carousel actually rotates through (keep the rest as pinned wallpapers).
 - Spring-damped adjustments, font scale and family, and animated aurora.
 - A master switch that restores the stock interface, persistent `localStorage` settings, cross-tab synchronization, and reduced-motion support.
 - Theme exports contain appearance settings only. Wallpaper images, wallpaper playlists, and the master-switch state are never included.

@@ -57,6 +57,8 @@ function initialState(): PrismRowState {
     wallpaperLight: [],
     wallpaperDimDark: [],
     wallpaperDimLight: [],
+    wallpaperCycleDark: [],
+    wallpaperCycleLight: [],
     wallpaperInterval: 30,
     wallpaperLoop: false,
     wallpaperPinnedDark: 0,
@@ -107,6 +109,8 @@ export function createPrismRowStore(): EngineStoreHandle<PrismRowState, PrismRow
         draft.wallpaperLight = [...next.wallpaperLight]
         draft.wallpaperDimDark = [...next.wallpaperDimDark]
         draft.wallpaperDimLight = [...next.wallpaperDimLight]
+        draft.wallpaperCycleDark = [...next.wallpaperCycleDark]
+        draft.wallpaperCycleLight = [...next.wallpaperCycleLight]
         draft.wallpaperInterval = next.wallpaperInterval
         draft.wallpaperLoop = next.wallpaperLoop
         draft.wallpaperPinnedDark = next.wallpaperPinnedDark

@@ -57,6 +57,13 @@ export declare const zh: {
     'prism.wallpaperPin': string;
     'prism.wallpaperPinHint': string;
     'prism.wallpaperIntervalHint': string;
+    'prism.cycleCount': string;
+    'prism.cycleAll': string;
+    'prism.cycleToggle': string;
+    'prism.cycleToggleHint': string;
+    'prism.cycleOn': string;
+    'prism.cycleOff': string;
+    'prism.cycleEmpty': string;
     'prism.wallpaperBlur': string;
     'prism.wallpaperFrost': string;
     'prism.wallpaperHint': string;
@@ -174,6 +181,13 @@ export declare const en: {
     'prism.wallpaperPin': string;
     'prism.wallpaperPinHint': string;
     'prism.wallpaperIntervalHint': string;
+    'prism.cycleCount': string;
+    'prism.cycleAll': string;
+    'prism.cycleToggle': string;
+    'prism.cycleToggleHint': string;
+    'prism.cycleOn': string;
+    'prism.cycleOff': string;
+    'prism.cycleEmpty': string;
     'prism.wallpaperBlur': string;
     'prism.wallpaperFrost': string;
     'prism.wallpaperHint': string;

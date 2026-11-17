@@ -152,7 +152,10 @@
 .wallpaperHeader { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .wallpaperScheme { min-width: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; font-weight: 500; line-height: 18px; }
 .wallpaperItems { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
-.wallpaperRow { position: relative; min-width: 0; }
+.wallpaperRow { position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.wallpaperRowSkipped .wallpaperThumbButton,
+.wallpaperRowSkipped .wallpaperThumbActive { border-style: dashed; opacity: 0.55; }
+.wallpaperRowSkipped .wallpaperThumb { filter: saturate(0.4); }
 .wallpaperThumbButton,
 .wallpaperThumbActive { position: relative; display: block; box-sizing: border-box; width: 100%; overflow: hidden; padding: 0; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; background: var(--dsw-alias-bg-base); cursor: pointer; }
 .wallpaperThumbActive { border-color: var(--dsw-alias-state-business-primary); outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
@@ -160,9 +163,24 @@
 .wallpaperThumbActive:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
 .wallpaperThumb { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
 .wallpaperPinned { position: absolute; right: 4px; bottom: 4px; display: grid; width: 17px; height: 17px; place-items: center; border-radius: 50%; color: white; background: var(--dsw-alias-state-business-primary); font-size: 10px; }
-.wallpaperDelete { position: absolute; top: 4px; right: 4px; display: grid; width: 20px; height: 20px; padding: 0; place-items: center; border: 1px solid rgb(255 255 255 / 0.3); border-radius: 50%; color: white; background: rgb(15 20 30 / 0.62); cursor: pointer; font-size: 15px; line-height: 1; opacity: 0; transition: opacity 120ms ease, background-color 120ms ease; }
+.wallpaperCycleBar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; }
+.wallpaperCycleCount { color: var(--dsw-alias-label-tertiary); font-size: 11px; line-height: 16px; }
+.wallpaperCycleAll { padding: 2px 8px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 999px; color: var(--dsw-alias-label-secondary); background: transparent; cursor: pointer; font: inherit; font-size: 11px; line-height: 16px; transition: border-color 120ms ease, color 120ms ease; }
+.wallpaperCycleAll:hover { border-color: var(--dsw-alias-state-business-primary); color: var(--dsw-alias-state-business-primary); }
+.wallpaperCycleAll:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.wallpaperCycleOn,
+.wallpaperCycleOff { display: block; width: 100%; padding: 2px 0; border: 1px solid transparent; border-radius: 6px; color: var(--dsw-alias-state-business-primary); background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 12%, transparent); cursor: pointer; font: inherit; font-size: 10px; line-height: 14px; transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease; }
+.wallpaperCycleOff { border-color: var(--dsw-alias-border-l2); color: var(--dsw-alias-label-tertiary); background: transparent; }
+.wallpaperCycleOn:hover { border-color: var(--dsw-alias-state-business-primary); }
+.wallpaperCycleOff:hover { border-color: var(--dsw-alias-label-secondary); color: var(--dsw-alias-label-secondary); }
+.wallpaperCycleOn:focus-visible,
+.wallpaperCycleOff:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.wallpaperWarn { margin: 6px 0 0; color: var(--dsw-alias-label-tertiary); font-size: 11px; line-height: 16px; }
+.wallpaperDelete { position: absolute; top: 4px; right: 4px; z-index: 1; display: grid; width: 20px; height: 20px; padding: 0; place-items: center; border: 1px solid rgb(255 255 255 / 0.3); border-radius: 50%; color: white; background: rgb(15 20 30 / 0.62); cursor: pointer; font-size: 15px; line-height: 1; opacity: 0; transition: opacity 120ms ease, background-color 120ms ease; }
 .wallpaperRow:hover .wallpaperDelete,
 .wallpaperDelete:focus-visible { opacity: 1; }
+.wallpaperThumbActive + .wallpaperCycleOn,
+.wallpaperThumbActive + .wallpaperCycleOff { margin-top: 0; }
 .wallpaperDelete:hover { background: #c94545; }
 .wallpaperDelete:focus-visible { outline: 2px solid white; outline-offset: 1px; }
 .wallpaperEmpty { padding: 12px; border: 1px dashed var(--dsw-alias-border-l2); border-radius: 7px; color: var(--dsw-alias-label-tertiary); font-size: 11px; line-height: 17px; text-align: center; }
@@ -194,6 +212,9 @@
   .tabActive,
   .presetCard,
   .presetCardActive,
+  .wallpaperCycleOn,
+  .wallpaperCycleOff,
+  .wallpaperCycleAll,
   .wallpaperDelete { transition: none; }
   .presetCard:hover { translate: none; }
 }
