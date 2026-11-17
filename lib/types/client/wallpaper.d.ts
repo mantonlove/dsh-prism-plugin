@@ -6,6 +6,8 @@
  */
 /** Maximum accepted image/GIF wallpaper file size, bytes (30MB). */
 export declare const MAX_WALLPAPER_BYTES: number;
+/** Upper bound on how many files one pick may ingest at once. */
+export declare const MAX_WALLPAPER_BATCH = 20;
 /** Longest edge a static wallpaper is downscaled to, px. */
 export declare const MAX_STATIC_EDGE = 1920;
 /** JPEG quality for downscaled static wallpapers. */

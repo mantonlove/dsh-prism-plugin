@@ -26,10 +26,14 @@ export interface PrismAppearanceInjected {
     pinWallpaper: (scheme: 'dark' | 'light', index: number) => void;
     setWallpaperBlur: (value: number) => void;
     setWallpaperFrost: (value: number) => void;
-    pickWallpaper: (scheme: 'dark' | 'light', file: File) => Promise<WallpaperError | null>;
+    pickWallpapers: (scheme: 'dark' | 'light', files: readonly File[]) => Promise<{
+        added: number;
+        errors: WallpaperError[];
+    }>;
     clearWallpaper: (scheme: 'dark' | 'light', index: number) => void;
     setWallpaperCycle: (scheme: 'dark' | 'light', index: number, include: boolean) => void;
     setWallpaperCycleAll: (scheme: 'dark' | 'light', include: boolean) => void;
+    reorderWallpapers: (scheme: 'dark' | 'light', from: number, to: number) => void;
     applyPreset: (preset: PrismPreset) => void;
     saveTheme: (name: string) => string | null;
     applyCustomTheme: (id: string) => void;

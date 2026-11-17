@@ -5,6 +5,7 @@
  * the damped PrismLayer, so presets and individual knobs preview live.
  */
 import { useRef, useState } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls the `settings.general.item` SlotMap merge.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
@@ -48,10 +49,11 @@ export interface PrismAppearanceInjected {
   pinWallpaper: (scheme: 'dark' | 'light', index: number) => void
   setWallpaperBlur: (value: number) => void
   setWallpaperFrost: (value: number) => void
-  pickWallpaper: (scheme: 'dark' | 'light', file: File) => Promise<WallpaperError | null>
+  pickWallpapers: (scheme: 'dark' | 'light', files: readonly File[]) => Promise<{ added: number, errors: WallpaperError[] }>
   clearWallpaper: (scheme: 'dark' | 'light', index: number) => void
   setWallpaperCycle: (scheme: 'dark' | 'light', index: number, include: boolean) => void
   setWallpaperCycleAll: (scheme: 'dark' | 'light', include: boolean) => void
+  reorderWallpapers: (scheme: 'dark' | 'light', from: number, to: number) => void
   applyPreset: (preset: PrismPreset) => void
   saveTheme: (name: string) => string | null
   applyCustomTheme: (id: string) => void
@@ -103,6 +105,16 @@ function color(values: Pick<PrismThemeValues, 'accentHue' | 'accentSat' | 'accen
   return hslToHex({ h: values.accentHue, s: values.accentSat, l: values.accentLight })
 }
 
+/** A shared light-through-surface motif: sharp, diffused, or softened. */
+function SurfaceTrace({ accent, backdrop, material }: {
+  accent: string
+  backdrop: string
+  material: PrismMaterial
+}) {
+  const style = { '--trace-accent': accent, '--trace-backdrop': backdrop } as React.CSSProperties
+  return <span className={css.surfaceTrace} data-material={material} style={style} aria-hidden="true"><i /></span>
+}
+
 function PresetCard({ id, active, label, onApply }: { id: PrismPreset, active: boolean, label: string, onApply: () => void }) {
   const recipe = PRESETS[id]
   const accent = color(recipe)
@@ -115,12 +127,9 @@ function PresetCard({ id, active, label, onApply }: { id: PrismPreset, active: b
       aria-label={label}
       onClick={onApply}
     >
-      <span className={css.presetArtwork} style={{ background: `linear-gradient(135deg, ${backdrop}, ${accent})` }} data-material={recipe.material}>
-        <span className={css.presetPane}><i /><i /><i /></span>
-        <span className={css.presetDot} />
-      </span>
+      <SurfaceTrace accent={accent} backdrop={backdrop} material={recipe.material} />
       <span className={css.presetName}>{label}</span>
-      {active && <span className={css.presetCheck} aria-hidden="true">✓</span>}
+      <span className={css.selectionMark} aria-hidden="true">{active ? '✓' : ''}</span>
     </button>
   )
 }
@@ -150,8 +159,8 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
   const {
     t, setEnabled, setMaterial, setBlur, setFrost, setBgBrightness, setFontScale, setFontChoice,
     setCustomFont, setZone, setInkLightColor, setInkDarkColor, setAccentColor, setBgColor, setAccentOpacity, setMotion, setBackground,
-    setWallpaperInterval, setWallpaperLoop, pinWallpaper, setWallpaperBlur, setWallpaperFrost, pickWallpaper, clearWallpaper,
-    setWallpaperCycle, setWallpaperCycleAll,
+    setWallpaperInterval, setWallpaperLoop, pinWallpaper, setWallpaperBlur, setWallpaperFrost, pickWallpapers, clearWallpaper,
+    setWallpaperCycle, setWallpaperCycleAll, reorderWallpapers,
     applyPreset, saveTheme, applyCustomTheme, deleteCustomTheme, exportTheme, importTheme, resetZones, reset, useStore,
   } = props
   const enabled = useStore(s => s.enabled)
@@ -194,6 +203,9 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
   const [themeName, setThemeName] = useState('')
   const [status, setStatus] = useState<{ message: string, error: boolean } | null>(null)
   const [wallpaperError, setWallpaperError] = useState<WallpaperErrorState | null>(null)
+  const [wallpaperNotice, setWallpaperNotice] = useState<{ scheme: 'dark' | 'light', message: string } | null>(null)
+  const [dragIndex, setDragIndex] = useState<{ scheme: 'dark' | 'light', index: number } | null>(null)
+  const suppressClickRef = useRef(false)
   const wallpaperFileRef = useRef<HTMLInputElement | null>(null)
   const importFileRef = useRef<HTMLInputElement | null>(null)
   const schemeRef = useRef<'dark' | 'light'>('dark')
@@ -222,12 +234,24 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
   }
 
   const onWallpaperFile = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-    const file = event.target.files?.[0]
+    const files = Array.from(event.target.files ?? [])
     event.target.value = ''
-    if (file === undefined) return
+    if (files.length === 0) return
     const scheme = schemeRef.current
-    const error = await pickWallpaper(scheme, file)
-    setWallpaperError(error === null ? null : { scheme, message: wallpaperErrorText(t as (key: string) => string, error) })
+    setWallpaperError(null)
+    setWallpaperNotice(null)
+    const { added, errors } = await pickWallpapers(scheme, files)
+    const firstError = errors[0]
+    setWallpaperError(firstError === undefined ? null : { scheme, message: wallpaperErrorText(t as (key: string) => string, firstError) })
+    const rejected = errors.length + Math.max(0, files.length - added - errors.length)
+    setWallpaperNotice(added === 0 && rejected === 0
+      ? null
+      : {
+          scheme,
+          message: t('prism.wallpaperBatch')
+            .replace('{n}', String(added))
+            .replace('{m}', String(rejected)),
+        })
   }
 
   const onImportFile = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -274,6 +298,57 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
     buttons[next]?.focus()
   }
 
+  /** Move one image to a new slot; the list order is the carousel order. */
+  const moveWallpaper = (scheme: 'dark' | 'light', index: number, target: number) => {
+    const urls = scheme === 'dark' ? wallpaperDark : wallpaperLight
+    if (target < 0 || target >= urls.length) return
+    reorderWallpapers(scheme, index, target)
+  }
+
+  /**
+   * Drag-to-reorder. Dragging starts on the grip, and every pointer move asks
+   * which tile is under the cursor and swaps right away, so the thumbnail
+   * follows the pointer instead of waiting for a drop.
+   */
+  const beginReorder = (scheme: 'dark' | 'light', index: number) => (event: ReactPointerEvent<HTMLElement>) => {
+    if (!wallpaperLoop || event.button !== 0) return
+    const origin = event.target
+    if (origin instanceof Element && origin.closest('[data-prism-no-drag]') !== null) return
+    const startX = event.clientX
+    const startY = event.clientY
+    let from = index
+    let moved = false
+    const onMove = (move: PointerEvent) => {
+      if (!moved) {
+        if (Math.hypot(move.clientX - startX, move.clientY - startY) < 5) return
+        moved = true
+      }
+      setDragIndex({ scheme, index: from })
+      const under = document.elementFromPoint(move.clientX, move.clientY)
+      const tile = under instanceof Element ? under.closest<HTMLElement>('[data-prism-wallpaper-tile]') : null
+      if (tile === null || tile.dataset.prismWallpaperTile !== scheme) return
+      const target = Number(tile.dataset.prismIndex)
+      if (!Number.isInteger(target) || target === from) return
+      reorderWallpapers(scheme, from, target)
+      from = target
+      setDragIndex({ scheme, index: from })
+    }
+    const finish = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', finish)
+      window.removeEventListener('pointercancel', finish)
+      setDragIndex(null)
+      if (moved) {
+        // The click that ends a drag would otherwise pin the wallpaper.
+        suppressClickRef.current = true
+        window.setTimeout(() => { suppressClickRef.current = false }, 0)
+      }
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', finish)
+    window.addEventListener('pointercancel', finish)
+  }
+
   const wallpaperRows = (scheme: 'dark' | 'light', urls: string[], labelKey: PrismLocaleKey) => {
     const pinned = scheme === 'dark' ? wallpaperPinnedDark : wallpaperPinnedLight
     const cycles = scheme === 'dark' ? wallpaperCycleDark : wallpaperCycleLight
@@ -289,44 +364,79 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
         </div>
         {urls.length === 0 ? <div className={css.wallpaperEmpty}>{t('prism.wallpaperEmpty')}</div> : (
           <>
-            <div className={css.wallpaperCycleBar}>
-              <span className={css.wallpaperCycleCount}>
-                {t('prism.cycleCount')} {String(included)}/{String(urls.length)}
-              </span>
-              <button
-                type="button"
-                className={css.wallpaperCycleAll}
-                aria-label={`${everySelected ? t('prism.cycleNone') : t('prism.cycleAll')} · ${t(labelKey)}`}
-                onClick={() => { setWallpaperCycleAll(scheme, !everySelected) }}
-              >{everySelected ? t('prism.cycleNone') : t('prism.cycleAll')}</button>
-            </div>
+            {wallpaperLoop && (
+              <div className={css.wallpaperCycleBar}>
+                <span className={css.wallpaperCycleCount}>
+                  {t('prism.cycleCount')} {String(included)}/{String(urls.length)}
+                </span>
+                <button
+                  type="button"
+                  className={css.wallpaperCycleAll}
+                  aria-label={`${everySelected ? t('prism.cycleNone') : t('prism.cycleAll')} · ${t(labelKey)}`}
+                  onClick={() => { setWallpaperCycleAll(scheme, !everySelected) }}
+                >{everySelected ? t('prism.cycleNone') : t('prism.cycleAll')}</button>
+              </div>
+            )}
             <div className={css.wallpaperItems}>
               {urls.map((url, index) => {
                 const inCycle = cycles[index] !== false
+                const tileClass = [css.wallpaperTile, inCycle ? css.wallpaperTileOn : css.wallpaperTileOff,
+                  dragIndex?.scheme === scheme && dragIndex.index === index ? css.wallpaperTileDragging : ''].filter(Boolean).join(' ')
                 return (
-                  <div className={inCycle ? css.wallpaperRow : `${css.wallpaperRow} ${css.wallpaperRowSkipped}`} key={`${scheme}-${String(index)}`}>
+                  <div
+                    className={tileClass}
+                    data-prism-wallpaper-tile={scheme}
+                    data-prism-index={String(index)}
+                    onPointerDown={beginReorder(scheme, index)}
+                    key={`${scheme}-${String(index)}-${url.slice(-16)}`}
+                  >
                     <button
                       type="button"
                       className={!wallpaperLoop && pinned === index ? css.wallpaperThumbActive : css.wallpaperThumbButton}
                       aria-label={`${t('prism.wallpaperPin')} · ${t(labelKey)} ${String(index + 1)}`}
                       aria-pressed={!wallpaperLoop && pinned === index}
-                      title={t('prism.wallpaperPinHint')}
-                      onClick={() => { pinWallpaper(scheme, index) }}
+                      title={wallpaperLoop ? t('prism.wallpaperPinWhileLooping') : t('prism.wallpaperPinHint')}
+                      onClick={() => {
+                        if (suppressClickRef.current || wallpaperLoop) return
+                        pinWallpaper(scheme, index)
+                      }}
                     >
-                      <img className={css.wallpaperThumb} src={url} alt="" />
-                      {!wallpaperLoop && pinned === index && <span className={css.wallpaperPinned}>✓</span>}
+                      <img className={css.wallpaperThumb} src={url} alt="" draggable={false} />
+                      <span className={css.wallpaperFrost} aria-hidden="true" />
+                      {!wallpaperLoop && pinned === index && (
+                        <span className={`${css.wallpaperBadge} ${css.wallpaperBadgeOn}`} aria-hidden="true">✓</span>
+                      )}
                     </button>
-                    <button
+                    {wallpaperLoop && <button
                       type="button"
-                      className={inCycle ? css.wallpaperCycleOn : css.wallpaperCycleOff}
+                      className={css.wallpaperGrip}
+                      aria-label={`${t('prism.cycleOrder')} · ${t(labelKey)} ${String(index + 1)}`}
+                      title={t('prism.cycleOrderHint')}
+                      onKeyDown={(event: ReactKeyboardEvent<HTMLButtonElement>) => {
+                        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+                        event.preventDefault()
+                        moveWallpaper(scheme, index, event.key === 'ArrowLeft' ? -1 : 1)
+                      }}
+                    >⣿</button>}
+                    {wallpaperLoop && <button
+                      type="button"
+                      className={`${css.wallpaperBadge} ${inCycle ? css.wallpaperBadgeOn : css.wallpaperBadgeOff}`}
+                      data-prism-no-drag="true"
                       aria-label={`${t('prism.cycleToggle')} · ${t(labelKey)} ${String(index + 1)}`}
                       aria-pressed={inCycle}
                       title={t('prism.cycleToggleHint')}
                       onClick={() => { setWallpaperCycle(scheme, index, !inCycle) }}
-                    >{inCycle ? t('prism.cycleOn') : t('prism.cycleOff')}</button>
+                    >
+                      {inCycle && (
+                        <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true">
+                          <path d="M2 6.2 4.6 8.8 10 3.2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>}
                     <button
                       type="button"
                       className={css.wallpaperDelete}
+                      data-prism-no-drag="true"
                       aria-label={`${t('prism.deleteWallpaper')} · ${t(labelKey)} ${String(index + 1)}`}
                       onClick={() => { clearWallpaper(scheme, index) }}
                     >×</button>
@@ -334,12 +444,13 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
                 )
               })}
             </div>
-            {included === 0 && (
+            {wallpaperLoop && included === 0 && (
               <p className={css.wallpaperWarn} role="status">{t('prism.cycleEmpty')}</p>
             )}
           </>
         )}
         {wallpaperError?.scheme === scheme && <div className={css.error} role="alert">{wallpaperError.message}</div>}
+        {wallpaperNotice?.scheme === scheme && <p className={css.hint} role="status">{wallpaperNotice.message}</p>}
       </div>
     )
   }
@@ -460,8 +571,8 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
                   <div className={css.materialGrid}>
                     {(['clear', 'frosted', 'velvet'] as const).map(id => (
                       <button key={id} type="button" className={material === id ? css.materialCardActive : css.materialCard} aria-pressed={material === id} onClick={() => { setMaterial(id) }}>
-                        <span className={css.materialSample} data-material={id}><i /></span>
-                        <span>{t(`prism.material${id[0]?.toUpperCase() ?? ''}${id.slice(1)}` as PrismLocaleKey)}</span>
+                        <SurfaceTrace accent={accent} backdrop={backdrop} material={id} />
+                        <span className={css.materialLabel}>{t(`prism.material${id[0]?.toUpperCase() ?? ''}${id.slice(1)}` as PrismLocaleKey)}<span className={css.selectionMark} aria-hidden="true">{material === id ? '✓' : ''}</span></span>
                       </button>
                     ))}
                   </div>
@@ -523,7 +634,7 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
           </div>
         </>
       )}
-      <input ref={wallpaperFileRef} className={css.fileInput} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" onChange={event => { void onWallpaperFile(event) }} />
+      <input ref={wallpaperFileRef} className={css.fileInput} type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,image/avif" onChange={event => { void onWallpaperFile(event) }} />
       <input ref={importFileRef} className={css.fileInput} type="file" accept=".json,application/json" onChange={event => { void onImportFile(event) }} />
     </div>
   )

@@ -24,7 +24,7 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 import { buildFontOverrides } from './fonts.ts'
 import { buildTokenOverrides } from './tokens.ts'
 import { advanceSpring, clampValue, createSpring, springSettled, type SpringState } from './spring.ts'
-import { analyzeLuminance, readWallpaper, veilAlpha, type WallpaperError } from './wallpaper.ts'
+import { analyzeLuminance, MAX_WALLPAPER_BATCH, readWallpaper, veilAlpha, type WallpaperError } from './wallpaper.ts'
 import { makeCustomTheme, normalizeThemeValues, parseThemeDocument, serializeTheme } from './theme-io.ts'
 import {
   CODE_FONT_CHOICES, FONT_CHOICES, MATERIALS, MAX_CUSTOM_THEMES, PRESETS, PRISM_THEME_LIMIT_ERROR, PRISM_THEME_PERSIST_ERROR, RANGES, carouselIndices, readSettings, writeSettings,
@@ -347,26 +347,50 @@ export class PrismLayer {
    * @returns null on success, or a typed rejection for the settings row.
    */
   async setWallpaperFromFile(scheme: 'dark' | 'light', file: File): Promise<WallpaperError | null> {
-    const result = await readWallpaper(file)
-    if (typeof result !== 'string') return result
-    const luminance = await analyzeLuminance(result)
-    if (scheme === 'dark') {
-      this.update({
-        wallpaperDark: [...this.settings.wallpaperDark, result],
-        wallpaperDimDark: [...this.settings.wallpaperDimDark, luminance],
-        // A fresh upload joins the carousel; exclusion is always an explicit act.
-        wallpaperCycleDark: [...this.settings.wallpaperCycleDark, true],
-        background: 'wallpaper',
-      })
-    } else {
-      this.update({
-        wallpaperLight: [...this.settings.wallpaperLight, result],
-        wallpaperDimLight: [...this.settings.wallpaperDimLight, luminance],
-        wallpaperCycleLight: [...this.settings.wallpaperCycleLight, true],
-        background: 'wallpaper',
-      })
+    const { errors } = await this.setWallpapersFromFiles(scheme, [file])
+    return errors[0] ?? null
+  }
+
+  /**
+   * Ingest several uploaded wallpapers for one scheme in a single settings
+   * write. Files are decoded one at a time so a large pick does not allocate
+   * every data URL at once, and a rejected file never aborts the batch.
+   * @param scheme - which palette the wallpapers belong to.
+   * @param files - the picked files, in pick order.
+   * @returns how many were appended and the typed rejections.
+   */
+  async setWallpapersFromFiles(scheme: 'dark' | 'light', files: readonly File[]): Promise<{ added: number, errors: WallpaperError[] }> {
+    const urls: string[] = []
+    const dims: number[] = []
+    const errors: WallpaperError[] = []
+    for (const file of files.slice(0, MAX_WALLPAPER_BATCH)) {
+      const result = await readWallpaper(file)
+      if (typeof result !== 'string') {
+        errors.push(result)
+        continue
+      }
+      urls.push(result)
+      dims.push(await analyzeLuminance(result))
     }
-    return null
+    if (urls.length > 0) {
+      if (scheme === 'dark') {
+        this.update({
+          wallpaperDark: [...this.settings.wallpaperDark, ...urls],
+          wallpaperDimDark: [...this.settings.wallpaperDimDark, ...dims],
+          // A fresh upload joins the carousel; exclusion is always an explicit act.
+          wallpaperCycleDark: [...this.settings.wallpaperCycleDark, ...urls.map(() => true)],
+          background: 'wallpaper',
+        })
+      } else {
+        this.update({
+          wallpaperLight: [...this.settings.wallpaperLight, ...urls],
+          wallpaperDimLight: [...this.settings.wallpaperDimLight, ...dims],
+          wallpaperCycleLight: [...this.settings.wallpaperCycleLight, ...urls.map(() => true)],
+          background: 'wallpaper',
+        })
+      }
+    }
+    return { added: urls.length, errors }
   }
 
   /** Remove one scheme's wallpaper at a rotation-list index. */
@@ -423,6 +447,38 @@ export class PrismLayer {
     const next = urls.map(() => include)
     if (scheme === 'dark') this.update({ wallpaperCycleDark: next })
     else this.update({ wallpaperCycleLight: next })
+  }
+
+  /**
+   * Move one image inside its palette's list.
+   * The list order is the carousel order, so dragging in the panel is what
+   * decides which image follows which. Membership flags and the pinned index
+   * move with their image instead of staying at the old slot.
+   * @param scheme - which palette's list to edit.
+   * @param from - current index of the image.
+   * @param to - index it should land on.
+   */
+  reorderWallpapers(scheme: 'dark' | 'light', from: number, to: number): void {
+    const urls = [...(scheme === 'dark' ? this.settings.wallpaperDark : this.settings.wallpaperLight)]
+    const dims = [...(scheme === 'dark' ? this.settings.wallpaperDimDark : this.settings.wallpaperDimLight)]
+    const flags = scheme === 'dark' ? this.settings.wallpaperCycleDark : this.settings.wallpaperCycleLight
+    const cycles = urls.map((_, slot) => flags[slot] !== false)
+    if (from === to || from < 0 || to < 0 || from >= urls.length || to >= urls.length) return
+    const pinned = scheme === 'dark' ? this.settings.wallpaperPinnedDark : this.settings.wallpaperPinnedLight
+    urls.splice(to, 0, ...urls.splice(from, 1))
+    if (dims.length === cycles.length) {
+      dims.splice(to, 0, ...dims.splice(from, 1))
+    }
+    cycles.splice(to, 0, ...cycles.splice(from, 1))
+    let nextPinned = pinned
+    if (pinned === from) nextPinned = to
+    else if (from < pinned && pinned <= to) nextPinned = pinned - 1
+    else if (to <= pinned && pinned < from) nextPinned = pinned + 1
+    if (scheme === 'dark') {
+      this.update({ wallpaperDark: urls, wallpaperDimDark: dims, wallpaperCycleDark: cycles, wallpaperPinnedDark: nextPinned })
+    } else {
+      this.update({ wallpaperLight: urls, wallpaperDimLight: dims, wallpaperCycleLight: cycles, wallpaperPinnedLight: nextPinned })
+    }
   }
 
   /** Pin one rotation-list image as the fixed background (stops the loop). */

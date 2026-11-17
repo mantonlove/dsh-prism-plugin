@@ -89,6 +89,18 @@ export declare class PrismLayer {
      * @returns null on success, or a typed rejection for the settings row.
      */
     setWallpaperFromFile(scheme: 'dark' | 'light', file: File): Promise<WallpaperError | null>;
+    /**
+     * Ingest several uploaded wallpapers for one scheme in a single settings
+     * write. Files are decoded one at a time so a large pick does not allocate
+     * every data URL at once, and a rejected file never aborts the batch.
+     * @param scheme - which palette the wallpapers belong to.
+     * @param files - the picked files, in pick order.
+     * @returns how many were appended and the typed rejections.
+     */
+    setWallpapersFromFiles(scheme: 'dark' | 'light', files: readonly File[]): Promise<{
+        added: number;
+        errors: WallpaperError[];
+    }>;
     /** Remove one scheme's wallpaper at a rotation-list index. */
     clearWallpaper(scheme: 'dark' | 'light', index: number): void;
     /** Toggle automatic rotation (on = cycle the selected images; off = pinned image). */
@@ -108,6 +120,16 @@ export declare class PrismLayer {
      * @param include - true to rotate through all, false to rotate through none.
      */
     setWallpaperCycleAll(scheme: 'dark' | 'light', include: boolean): void;
+    /**
+     * Move one image inside its palette's list.
+     * The list order is the carousel order, so dragging in the panel is what
+     * decides which image follows which. Membership flags and the pinned index
+     * move with their image instead of staying at the old slot.
+     * @param scheme - which palette's list to edit.
+     * @param from - current index of the image.
+     * @param to - index it should land on.
+     */
+    reorderWallpapers(scheme: 'dark' | 'light', from: number, to: number): void;
     /** Pin one rotation-list image as the fixed background (stops the loop). */
     pinWallpaper(scheme: 'dark' | 'light', index: number): void;
     /** Mount every layer-owned effect. */

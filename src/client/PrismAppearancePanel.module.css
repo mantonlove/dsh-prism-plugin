@@ -21,9 +21,13 @@
   padding: 20px;
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 16px;
+  /* Literal fallback first: if a colour variable is missing the shorthand
+     below is dropped, and the hero must still be opaque instead of letting
+     whatever sits behind the panel show through. */
+  background-color: #10151f;
   background:
     radial-gradient(circle at 90% -20%, color-mix(in srgb, var(--dsw-alias-state-business-primary) 13%, transparent), transparent 58%),
-    var(--dsw-alias-bg-base);
+    var(--dsw-alias-bg-base, #10151f);
 }
 
 .heroCopy { display: flex; min-width: 0; flex-direction: column; justify-content: space-between; gap: 20px; z-index: 1; }
@@ -102,37 +106,33 @@
 .error { color: var(--dsw-alias-state-error-primary); }
 .status { color: var(--dsw-alias-state-success-primary, #32865a); }
 
-.presetGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+/* Color is a compact edge-to-edge trace; its light pattern carries the finish. */
+.presetGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .presetCard,
-.presetCardActive { position: relative; display: flex; min-width: 0; flex-direction: column; gap: 7px; padding: 5px 5px 8px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 11px; color: var(--dsw-alias-label-secondary); background: transparent; cursor: pointer; text-align: left; transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, translate 150ms ease; }
-.presetCard:hover { border-color: var(--dsw-alias-border-l3); background: var(--dsw-alias-interactive-bg-hover); translate: 0 -1px; }
-.presetCardActive { border-color: var(--dsw-alias-state-business-primary); color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover-accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--dsw-alias-state-business-primary) 18%, transparent); }
-.presetCard:focus-visible,
-.presetCardActive:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
-.presetArtwork { position: relative; display: block; width: 100%; aspect-ratio: 1.65; overflow: hidden; border-radius: 7px; }
-.presetArtwork::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 20%, rgb(255 255 255 / 0.16) 50%, transparent 80%); }
-.presetPane { position: absolute; left: 12%; right: 12%; bottom: -8%; display: flex; height: 62%; flex-direction: column; gap: 5px; padding: 8px; border: 1px solid rgb(255 255 255 / 0.4); border-radius: 6px 6px 0 0; background: rgb(255 255 255 / 0.32); box-shadow: 0 4px 12px rgb(10 20 40 / 0.14); backdrop-filter: blur(8px); }
-.presetArtwork[data-material='clear'] .presetPane { background: rgb(255 255 255 / 0.13); backdrop-filter: blur(2px); }
-.presetArtwork[data-material='velvet'] .presetPane { background: rgb(255 255 255 / 0.62); backdrop-filter: blur(15px); }
-.presetPane i { display: block; width: 60%; height: 3px; border-radius: 4px; background: rgb(25 35 55 / 0.28); }
-.presetPane i:nth-child(2) { width: 82%; }
-.presetPane i:nth-child(3) { width: 44%; }
-.presetDot { position: absolute; right: 17%; bottom: 12%; width: 10px; height: 10px; border: 2px solid rgb(255 255 255 / 0.65); border-radius: 50%; background: rgb(255 255 255 / 0.6); box-shadow: 0 2px 5px rgb(10 20 40 / 0.18); }
-.presetName { overflow: hidden; padding: 0 4px; font-size: 11px; font-weight: 500; line-height: 17px; text-overflow: ellipsis; white-space: nowrap; }
-.presetCheck { position: absolute; top: 9px; right: 9px; display: grid; width: 17px; height: 17px; place-items: center; border-radius: 50%; color: white; background: var(--dsw-alias-state-business-primary); box-shadow: 0 1px 4px rgb(0 0 0 / 0.18); font-size: 10px; }
-
-.materialGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.presetCardActive { display: flex; min-width: 0; min-height: 60px; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 9px; color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-bg-layer-1); cursor: pointer; text-align: left; font: inherit; transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease; }
+.presetCard:hover, .materialCard:hover { border-color: var(--dsw-alias-border-l3); background: var(--dsw-alias-interactive-bg-hover); }
+.presetCard:focus-visible, .presetCardActive:focus-visible,
+.materialCard:focus-visible, .materialCardActive:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.presetCard:disabled, .presetCardActive:disabled, .materialCard:disabled, .materialCardActive:disabled { opacity: 0.45; cursor: not-allowed; }
+.presetName { min-width: 0; flex: 1; color: inherit; font-size: 12px; line-height: 18px; }
+.presetCardActive .presetName, .materialCardActive .materialLabel { font-weight: 600; }
+.selectionMark { display: grid; width: 16px; height: 16px; flex: none; place-items: center; border: 1px solid var(--dsw-alias-border-l3); border-radius: 50%; color: transparent; font-size: 10px; line-height: 1; }
+.presetCardActive .selectionMark, .materialCardActive .selectionMark { border-color: var(--dsw-alias-state-business-primary); color: white; background: var(--dsw-alias-state-business-primary); }
+.surfaceTrace { position: relative; display: block; width: 64px; height: 42px; flex: none; overflow: hidden; border-radius: 5px; background: var(--trace-backdrop); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18); isolation: isolate; }
+.surfaceTrace::before { content: ''; position: absolute; inset: -12px; background: repeating-linear-gradient(110deg, transparent 0 13px, var(--trace-accent) 13px 19px, transparent 19px 25px, rgb(255 255 255 / 0.8) 25px 27px, transparent 27px 37px); }
+.surfaceTrace::after { content: ''; position: absolute; inset: 0; border-top: 1px solid rgb(255 255 255 / 0.38); border-bottom: 1px solid rgb(0 0 0 / 0.12); pointer-events: none; }
+.surfaceTrace[data-material='clear']::before { opacity: 0.86; }
+.surfaceTrace[data-material='frosted']::before { opacity: 0.7; filter: blur(3px); }
+.surfaceTrace[data-material='velvet']::before { opacity: 0.62; filter: blur(8px); }
+.surfaceTrace[data-material='frosted'] i, .surfaceTrace[data-material='velvet'] i { position: absolute; z-index: 1; inset: 0; background: rgb(255 255 255 / 0.13); }
+.surfaceTrace[data-material='velvet'] i { background: rgb(24 28 38 / 0.16); }
+.materialGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .materialCard,
-.materialCardActive { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 7px; padding: 6px 6px 9px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; color: var(--dsw-alias-label-secondary); background: transparent; cursor: pointer; font-size: 11px; line-height: 17px; }
-.materialCard:hover { background: var(--dsw-alias-interactive-bg-hover); border-color: var(--dsw-alias-border-l3); }
-.materialCardActive { border-color: var(--dsw-alias-state-business-primary); color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover-accent); }
-.materialCard:focus-visible,
-.materialCardActive:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
-.materialSample { position: relative; display: block; width: 100%; height: 48px; overflow: hidden; border-radius: 6px; background: radial-gradient(circle at 20% 20%, #e7b3c6, transparent 65%), radial-gradient(circle at 80% 80%, #83b7e8, transparent 70%), #b7c5d5; }
-.materialSample i { position: absolute; inset: 7px; border: 1px solid rgb(255 255 255 / 0.55); border-radius: 5px; background: rgb(255 255 255 / 0.25); backdrop-filter: blur(8px); }
-.materialSample[data-material='clear'] i { background: rgb(255 255 255 / 0.08); backdrop-filter: blur(1px); }
-.materialSample[data-material='velvet'] i { background: rgb(255 255 255 / 0.64); backdrop-filter: blur(16px); }
-
+.materialCardActive { display: flex; min-width: 0; flex-direction: column; gap: 9px; padding: 8px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 9px; color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-bg-layer-1); cursor: pointer; text-align: left; font: inherit; transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease; }
+.presetCardActive, .materialCardActive { border-color: var(--dsw-alias-state-business-primary); color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover-accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-state-business-primary) 22%, transparent); }
+.presetCardActive:hover, .materialCardActive:hover { box-shadow: inset 0 0 0 1px var(--dsw-alias-state-business-primary); }
+.materialCard .surfaceTrace, .materialCardActive .surfaceTrace { width: 100%; height: 48px; }
+.materialLabel { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 4px; font-size: 12px; line-height: 18px; }
 .textInput { width: 100%; min-width: 0; height: 34px; padding: 5px 10px; box-sizing: border-box; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; outline: none; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-layer-1); font: inherit; font-size: 12px; line-height: 20px; }
 .textInput::placeholder { color: var(--dsw-alias-label-tertiary); }
 .textInput:hover { border-color: var(--dsw-alias-border-l3); }
@@ -151,36 +151,48 @@
 .wallpaperList { display: flex; min-width: 0; flex-direction: column; gap: 9px; padding: 10px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; background: var(--dsw-alias-bg-layer-1); }
 .wallpaperHeader { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .wallpaperScheme { min-width: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; font-weight: 500; line-height: 18px; }
-.wallpaperItems { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
-.wallpaperRow { position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.wallpaperRowSkipped .wallpaperThumbButton,
-.wallpaperRowSkipped .wallpaperThumbActive { border-style: dashed; opacity: 0.55; }
-.wallpaperRowSkipped .wallpaperThumb { filter: saturate(0.4); }
+.wallpaperItems { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; user-select: none; -webkit-user-select: none; }
+.wallpaperTile { position: relative; min-width: 0; max-width: 220px; border-radius: 9px; transition: opacity 140ms ease, transform 140ms ease; }
+.wallpaperTileOn { cursor: grab; }
+.wallpaperTileOn:active { cursor: grabbing; }
+.wallpaperTileDragging { opacity: 0.55; transform: scale(0.96); }
+.wallpaperTileDragging .wallpaperThumbButton { outline: 2px dashed var(--dsw-alias-state-business-primary); outline-offset: 1px; }
 .wallpaperThumbButton,
-.wallpaperThumbActive { position: relative; display: block; box-sizing: border-box; width: 100%; overflow: hidden; padding: 0; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; background: var(--dsw-alias-bg-base); cursor: pointer; }
+.wallpaperThumbActive { position: relative; display: block; box-sizing: border-box; width: 100%; overflow: hidden; padding: 0; border: 1px solid var(--dsw-alias-border-l2); border-radius: 9px; background: var(--dsw-alias-bg-base); cursor: pointer; }
 .wallpaperThumbActive { border-color: var(--dsw-alias-state-business-primary); outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
 .wallpaperThumbButton:focus-visible,
 .wallpaperThumbActive:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
-.wallpaperThumb { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
-.wallpaperPinned { position: absolute; right: 4px; bottom: 4px; display: grid; width: 17px; height: 17px; place-items: center; border-radius: 50%; color: white; background: var(--dsw-alias-state-business-primary); font-size: 10px; }
+.wallpaperThumb { display: block; width: 100%; max-height: 140px; aspect-ratio: 16 / 10; object-fit: cover; transition: filter 180ms ease, transform 180ms ease; }
+.wallpaperTileOff .wallpaperThumb { filter: blur(3px) saturate(0.55) brightness(0.86); transform: scale(1.05); }
+.wallpaperFrost { position: absolute; inset: 0; display: block; opacity: 0; background: color-mix(in srgb, var(--dsw-alias-bg-base) 26%, transparent); backdrop-filter: blur(7px); transition: opacity 180ms ease; }
+.wallpaperTileOff .wallpaperFrost { opacity: 1; }
+.wallpaperGrip { position: absolute; top: 4px; left: 4px; z-index: 2; display: grid; width: 20px; height: 20px; padding: 0; place-items: center; border: 1px solid rgb(255 255 255 / 0.24); border-radius: 6px; color: white; background: rgb(15 20 30 / 0.5); cursor: grab; font: inherit; font-size: 11px; line-height: 1; opacity: 0; touch-action: none; transition: opacity 120ms ease, background-color 120ms ease; }
+.wallpaperGrip:active { cursor: grabbing; }
+.wallpaperTile:hover .wallpaperGrip,
+.wallpaperGrip:focus-visible { opacity: 1; }
+.wallpaperGrip:hover { background: rgb(15 20 30 / 0.78); }
+.wallpaperGrip:focus-visible { outline: 2px solid white; outline-offset: 1px; }
+.wallpaperBadge { position: absolute; right: 5px; bottom: 5px; z-index: 2; display: grid; box-sizing: border-box; width: 18px; height: 18px; padding: 0; place-items: center; border: 1.5px solid rgb(255 255 255 / 0.8); border-radius: 50%; color: white; background: rgb(15 20 30 / 0.42); font: inherit; font-size: 10px; line-height: 1; transition: background-color 120ms ease, border-color 120ms ease; }
+.wallpaperBadgeOn { border-color: var(--dsw-alias-state-business-primary); background: var(--dsw-alias-state-business-primary); }
+.wallpaperBadgeOff { cursor: pointer; }
+.wallpaperBadgeOff:hover { border-color: white; background: rgb(15 20 30 / 0.66); }
+.wallpaperBadgeOn[type='button'] { cursor: pointer; }
+.wallpaperBadgeOn[type='button']:hover { filter: brightness(1.08); }
+.wallpaperBadge:focus-visible { outline: 2px solid white; outline-offset: 2px; }
 .wallpaperCycleBar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; }
 .wallpaperCycleCount { color: var(--dsw-alias-label-tertiary); font-size: 11px; line-height: 16px; }
 .wallpaperCycleAll { padding: 2px 8px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 999px; color: var(--dsw-alias-label-secondary); background: transparent; cursor: pointer; font: inherit; font-size: 11px; line-height: 16px; transition: border-color 120ms ease, color 120ms ease; }
 .wallpaperCycleAll:hover { border-color: var(--dsw-alias-state-business-primary); color: var(--dsw-alias-state-business-primary); }
 .wallpaperCycleAll:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
-.wallpaperCycleOn,
-.wallpaperCycleOff { display: block; width: 100%; padding: 2px 0; border: 1px solid transparent; border-radius: 6px; color: var(--dsw-alias-state-business-primary); background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 12%, transparent); cursor: pointer; font: inherit; font-size: 10px; line-height: 14px; transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease; }
-.wallpaperCycleOff { border-color: var(--dsw-alias-border-l2); color: var(--dsw-alias-label-tertiary); background: transparent; }
-.wallpaperCycleOn:hover { border-color: var(--dsw-alias-state-business-primary); }
-.wallpaperCycleOff:hover { border-color: var(--dsw-alias-label-secondary); color: var(--dsw-alias-label-secondary); }
-.wallpaperCycleOn:focus-visible,
-.wallpaperCycleOff:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+/* Legacy markup from bundles built before the tile grid: if a page keeps an
+   older DOM while the newer stylesheet is live, those rows must still lay out
+   as small tiles instead of full-width images. */
+.wallpaperRow { position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0; max-width: 220px; }
+
 .wallpaperWarn { margin: 6px 0 0; color: var(--dsw-alias-label-tertiary); font-size: 11px; line-height: 16px; }
-.wallpaperDelete { position: absolute; top: 4px; right: 4px; z-index: 1; display: grid; width: 20px; height: 20px; padding: 0; place-items: center; border: 1px solid rgb(255 255 255 / 0.3); border-radius: 50%; color: white; background: rgb(15 20 30 / 0.62); cursor: pointer; font-size: 15px; line-height: 1; opacity: 0; transition: opacity 120ms ease, background-color 120ms ease; }
-.wallpaperRow:hover .wallpaperDelete,
+.wallpaperDelete { position: absolute; top: 4px; right: 4px; z-index: 2; display: grid; width: 20px; height: 20px; padding: 0; place-items: center; border: 1px solid rgb(255 255 255 / 0.3); border-radius: 50%; color: white; background: rgb(15 20 30 / 0.62); cursor: pointer; font-size: 15px; line-height: 1; opacity: 0; transition: opacity 120ms ease, background-color 120ms ease; }
+.wallpaperTile:hover .wallpaperDelete,
 .wallpaperDelete:focus-visible { opacity: 1; }
-.wallpaperThumbActive + .wallpaperCycleOn,
-.wallpaperThumbActive + .wallpaperCycleOff { margin-top: 0; }
 .wallpaperDelete:hover { background: #c94545; }
 .wallpaperDelete:focus-visible { outline: 2px solid white; outline-offset: 1px; }
 .wallpaperEmpty { padding: 12px; border: 1px dashed var(--dsw-alias-border-l2); border-radius: 7px; color: var(--dsw-alias-label-tertiary); font-size: 11px; line-height: 17px; text-align: center; }
@@ -196,7 +208,6 @@
 }
 @container prism-panel (max-width: 460px) {
   .hero { padding: 16px; }
-  .presetGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sectionHead { padding: 13px 12px 0; }
   .sectionBody { padding: 12px; }
   .sectionHead:has(> button) { align-items: flex-start; flex-direction: column; }
@@ -206,15 +217,19 @@
   .disabledState { align-items: flex-start; flex-direction: column; }
 }
 
-@media (hover: none) { .wallpaperDelete { opacity: 1; } }
+@media (hover: none) { .wallpaperDelete, .wallpaperGrip { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .tab,
   .tabActive,
   .presetCard,
   .presetCardActive,
-  .wallpaperCycleOn,
-  .wallpaperCycleOff,
+  .materialCard,
+  .materialCardActive,
   .wallpaperCycleAll,
-  .wallpaperDelete { transition: none; }
-  .presetCard:hover { translate: none; }
+  .wallpaperDelete,
+  .wallpaperGrip,
+  .wallpaperBadge,
+  .wallpaperFrost,
+  .wallpaperThumb,
+  .wallpaperTile { transition: none; }
 }

@@ -1,6 +1,6 @@
 # DSH Background — Custom Background Images & Glassmorphism
 
-**DSH Background** lets you upload your own photos or animated GIFs as the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI background, then tune glassmorphism, opacity, typography, colors, and motion. Version 2.0.3 is tested against DSH `0.2.2-rc.3`, retains compatibility with `0.2.2-rc.1+`, and ships prebuilt in `lib/`; installing the plugin does not require a build step.
+**DSH Background** lets you upload your own photos or animated GIFs as the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI background, choose which of them join the carousel, reorder them by dragging, then tune glassmorphism, opacity, typography, colors, and motion. Version 2.0.10 is tested against DSH `0.2.2-rc.3`, retains compatibility with `0.2.2-rc.1+`, and ships prebuilt in `lib/`; installing the plugin does not require a build step.
 
 ## Install
 
@@ -38,12 +38,13 @@ dsh plugin --profile web remove dsh-client-ui-prism
 - **Task-oriented studio:** Themes, Glass, Backdrop, and Type tabs replace the old accordion and the retired `settings.plugin.item` master card.
 - **Clearer controls:** accessible switches and buttons, selected/focus/disabled states, keyboard-operated sliders, double-click slider reset, and section-level zone reset.
 - **Live miniature preview:** inspect the active palette and material before changing the main interface.
+- **Reworked preset and material pickers:** presets are two-column rows whose colour chip carries the backdrop, accent, and a diagonal light trace; materials reuse the same trace in sharp, diffused, and softened treatments so clear, frosted, and velvet can be compared side by side before choosing.
 
 ## Theme features
 
 - Clear, frosted, and velvet materials; blur and global frost; six independent zone opacities for the base, sidebar, cards, inputs, overlays, and bubbles.
 - Hex and color-picker controls for the accent, backdrop, and light/dark text colors.
-- **Custom background images:** upload your own photos or animated GIFs into separate light/dark playlists; switch between fixed and automatic playback, and choose image by image which ones the carousel actually rotates through (keep the rest as pinned wallpapers).
+- **Custom background images:** upload several photos or animated GIFs at once into separate light/dark playlists; switch between fixed and automatic playback. The checkbox in each thumbnail's bottom-right corner decides whether that image joins the carousel (unchecked ones blur behind a frosted veil), and dragging the top-left grip changes the playback order.
 - Spring-damped adjustments, font scale and family, and animated aurora.
 - A master switch that restores the stock interface, persistent `localStorage` settings, cross-tab synchronization, and reduced-motion support.
 - Theme exports contain appearance settings only. Wallpaper images, wallpaper playlists, and the master-switch state are never included.

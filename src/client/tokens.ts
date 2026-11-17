@@ -43,7 +43,8 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
     '--dsw-font-family': pair('var(--prism-font-family)', 'var(--prism-font-family)'),
     '--ds-font-family-code': pair('var(--prism-code-family)', 'var(--prism-code-family)'),
 
-    // Base canvas stays near-opaque; every raised surface turns glass.
+    // Base canvas stays opaque: this token is the page/column fill, and making
+    // it translucent bleeds the wallpaper through every settings page.
     '--dsw-alias-bg-base': pair('#F2F6FC', '#0A0F16'),
 
     // Surfaces: one canonical glass color per scheme, scaled by frost (the

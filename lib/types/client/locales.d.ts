@@ -62,8 +62,9 @@ export declare const zh: {
     'prism.cycleNone': string;
     'prism.cycleToggle': string;
     'prism.cycleToggleHint': string;
-    'prism.cycleOn': string;
-    'prism.cycleOff': string;
+    'prism.wallpaperPinWhileLooping': string;
+    'prism.cycleOrder': string;
+    'prism.cycleOrderHint': string;
     'prism.cycleEmpty': string;
     'prism.wallpaperBlur': string;
     'prism.wallpaperFrost': string;
@@ -117,6 +118,7 @@ export declare const zh: {
     'prism.backgroundDesc': string;
     'prism.fontPreview': string;
     'prism.wallpaperEmpty': string;
+    'prism.wallpaperBatch': string;
     'prism.errorNone': string;
 };
 export type PrismLocaleKey = keyof typeof zh;
@@ -187,8 +189,9 @@ export declare const en: {
     'prism.cycleNone': string;
     'prism.cycleToggle': string;
     'prism.cycleToggleHint': string;
-    'prism.cycleOn': string;
-    'prism.cycleOff': string;
+    'prism.wallpaperPinWhileLooping': string;
+    'prism.cycleOrder': string;
+    'prism.cycleOrderHint': string;
     'prism.cycleEmpty': string;
     'prism.wallpaperBlur': string;
     'prism.wallpaperFrost': string;
@@ -242,6 +245,7 @@ export declare const en: {
     'prism.backgroundDesc': string;
     'prism.fontPreview': string;
     'prism.wallpaperEmpty': string;
+    'prism.wallpaperBatch': string;
     'prism.errorNone': string;
 };
 //# sourceMappingURL=locales.d.ts.map

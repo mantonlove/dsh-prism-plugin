@@ -145,6 +145,42 @@ describe('PrismLayer saved-theme limits and persistence', () => {
     expect(index(['a', 'b', 'c'])).toBe(1)
   })
 
+  it('moves an image and keeps membership and pinning on the right image', () => {
+    const { layer, update } = layerWithWallpapers(['a', 'b', 'c'])
+    Object.assign(layer, { settings: { ...layer.getSettings(), wallpaperCycleDark: [true, false, true], wallpaperPinnedDark: 1 } })
+    layer.reorderWallpapers('dark', 0, 2)
+    expect(update.mock.calls.at(-1)?.[0]).toMatchObject({
+      wallpaperDark: ['b', 'c', 'a'],
+      wallpaperCycleDark: [false, true, true],
+      wallpaperPinnedDark: 0,
+    })
+    expect((update.mock.calls.at(-1)?.[0] as { wallpaperDimDark: number[] }).wallpaperDimDark).toHaveLength(3)
+  })
+
+  it('ignores reorder requests outside the list', () => {
+    const { layer, update } = layerWithWallpapers(['a', 'b'])
+    layer.reorderWallpapers('dark', 1, 1)
+    layer.reorderWallpapers('dark', 5, 0)
+    layer.reorderWallpapers('dark', 0, 4)
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('rotates in list order, so dragging changes which image follows which', () => {
+    const { layer } = layerWithWallpapers(['a', 'b', 'c'])
+    const index = (layer as unknown as { wallpaperIndex(urls: string[]): number }).wallpaperIndex.bind(layer)
+    Object.assign(layer, {
+      settings: { ...layer.getSettings(), wallpaperLoop: true, wallpaperInterval: 10, wallpaperCycleDark: [true, false, true] },
+    })
+    const now = vi.spyOn(Date, 'now').mockReturnValue(10_000)
+    expect(index(['a', 'b', 'c'])).toBe(2)
+    // Membership travels with its image: 'a' was excluded and stays excluded
+    // after moving to the end, so the carousel is [c, b] in that order.
+    layer.reorderWallpapers('dark', 2, 0)
+    expect(index(['c', 'b', 'a'])).toBe(1)
+    now.mockReturnValue(20_000)
+    expect(index(['c', 'b', 'a'])).toBe(0)
+  })
+
   it('keeps membership aligned when an image is removed', () => {
     const { layer, update } = layerWithWallpapers(['a', 'b', 'c'])
     Object.assign(layer, {
