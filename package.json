@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-prism",
   "description": "DSH Background: upload custom photo/GIF backgrounds and tune glassmorphism, typography, accent colors, aurora, and portable themes for the DSH Web GUI",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "publishConfig": {
     "access": "public"
   },

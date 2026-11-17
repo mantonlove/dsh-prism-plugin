@@ -59,6 +59,7 @@ export declare const zh: {
     'prism.wallpaperIntervalHint': string;
     'prism.cycleCount': string;
     'prism.cycleAll': string;
+    'prism.cycleNone': string;
     'prism.cycleToggle': string;
     'prism.cycleToggleHint': string;
     'prism.cycleOn': string;
@@ -183,6 +184,7 @@ export declare const en: {
     'prism.wallpaperIntervalHint': string;
     'prism.cycleCount': string;
     'prism.cycleAll': string;
+    'prism.cycleNone': string;
     'prism.cycleToggle': string;
     'prism.cycleToggleHint': string;
     'prism.cycleOn': string;

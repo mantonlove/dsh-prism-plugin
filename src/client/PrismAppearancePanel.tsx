@@ -296,10 +296,9 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
               <button
                 type="button"
                 className={css.wallpaperCycleAll}
-                aria-label={`${t('prism.cycleAll')} · ${t(labelKey)}`}
-                aria-pressed={everySelected}
+                aria-label={`${everySelected ? t('prism.cycleNone') : t('prism.cycleAll')} · ${t(labelKey)}`}
                 onClick={() => { setWallpaperCycleAll(scheme, !everySelected) }}
-              >{t('prism.cycleAll')}</button>
+              >{everySelected ? t('prism.cycleNone') : t('prism.cycleAll')}</button>
             </div>
             <div className={css.wallpaperItems}>
               {urls.map((url, index) => {
