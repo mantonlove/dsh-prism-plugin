@@ -2,6 +2,42 @@
 
 **DSH Background** 可以把你自己的照片或 GIF 动图上传为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI 的背景，自己挑哪几张参与轮播、拖动调整顺序，并自由调整毛玻璃、透明度、字体、颜色与动效。v2.0.10 已在 DSH `0.2.2-rc.3` 上完成适配验证，同时保留对 `0.2.2-rc.1+` 的兼容性；仓库自带 `lib/` 预构建产物，安装插件无需执行构建。
 
+## 效果展示
+
+| 深色工作区 · 照片壁纸 | 深色工作区 · 水纹壁纸 |
+|---|---|
+| ![深色工作区与照片壁纸](assets/screens/01-main-dark-anime.jpg) | ![深色工作区与水纹壁纸](assets/screens/02-main-dark-water.jpg) |
+
+| 亮色工作区 · 蓝天壁纸 | 背景设置 |
+|---|---|
+| ![亮色工作区与蓝天壁纸](assets/screens/03-main-light-sky.jpg) | ![背景页中的亮色与暗色壁纸列表](assets/screens/04-panel-background.jpg) |
+
+| 主题与预设 | 材质与区域透明度 |
+|---|---|
+| ![主题页的六套预设](assets/screens/05-panel-theme.jpg) | ![玻璃页的三档材质与六个区域滑块](assets/screens/06-panel-glass.jpg) |
+
+| 文字 |
+|---|
+| ![文字页的字体、字号与实时文字样例](assets/screens/07-panel-type.jpg) |
+
+## 功能一览
+
+| 功能 | Feature |
+|---|---|
+| 上传自己的照片或 GIF 动图，支持一次多选 | Upload your own photos or GIFs, one or many at a time |
+| 亮色与暗色各一套背景列表，跟随明暗模式切换 | Separate light and dark playlists that follow the appearance mode |
+| 每张图独立参与轮播，右下角角标决定是否轮播 | Per-image carousel selection: the corner badge decides which images rotate |
+| 未选中的图变模糊起雾，重新选中即恢复清晰 | Unselected images recede behind blur and frost, and sharpen when picked again |
+| 拖动缩略图即可调整轮播顺序 | Drag thumbnails to change the carousel order |
+| 固定单张或定时轮播，间隔可调 | Fixed or timed playback with an adjustable interval |
+| 清透 / 磨砂 / 毛绒三档材质，模糊与磨砂强度分别可调 | Clear, frosted, and velvet materials with separate blur and frost controls |
+| 六个区域独立透明度：主背景、侧边栏、卡片、输入框、弹层、气泡 | Six independent zone opacities: base, sidebar, cards, inputs, overlays, bubbles |
+| 强调色、底色，以及亮色 / 暗色文字各自独立 | Accent, backdrop, and separate light/dark text colours |
+| 字体族与字号，作用于整个工作区 | Font family and scale applied to the whole workspace |
+| 六套预设，外加可迁移的自定义主题（带版本号的 JSON） | Six presets plus portable custom themes exchanged as versioned JSON |
+| 流光极光、弹性过渡，并跟随系统「减弱动效」 | Animated aurora, spring-damped transitions, and reduced-motion support |
+| 总开关、`localStorage` 持久化、跨标签页同步 | Master switch, `localStorage` persistence, and cross-tab sync |
+
 ## 安装
 
 需要 DeepSeek Harness `0.2.2-rc.1` 或更高的 `0.2.x` 版本。
@@ -49,13 +85,6 @@ dsh plugin --profile web remove dsh-client-ui-prism
 - 总开关一键还原原生界面；设置通过 `localStorage` 持久化并跨标签页同步；支持减少动态效果。
 - 主题导出只包含外观参数，不包含壁纸图片、壁纸播放列表或总开关状态。
 
-## 效果展示
-
-毛玻璃主题应用于工作区、欢迎页与输入框的效果示例：
-
-| 效果一 | 效果二 | 效果三 |
-|---|---|---|
-| ![DSH Background 毛玻璃效果一](assets/shot-1.jpg) | ![DSH Background 毛玻璃效果二](assets/shot-2.jpg) | ![DSH Background 毛玻璃效果三](assets/shot-3.jpg) |
 
 ## 开发
 
