@@ -1,7 +1,7 @@
 {
   "name": "dsh-prism-plugin",
   "description": "DSH Background: photo, GIF, and MP4/WebM backdrops for the DSH Web GUI, with per-image carousel picks, drag ordering, glassmorphism, typography, accent colors, aurora, and portable themes",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "publishConfig": {
     "access": "public"
   },
