@@ -64,13 +64,26 @@
   display: block;
 }
 
-[data-prism-wallpaper-img] {
+[data-prism-wallpaper-img],
+[data-prism-wallpaper-video] {
   width: 100%;
   height: 100%;
   object-fit: cover;
   filter: blur(var(--prism-wallpaper-blur, 0px));
   /* Rotation crossfade; the layer restarts the animation on each src swap. */
   animation: prism-wallpaper-in 0.8s var(--ds-ease-in-out, ease-in-out);
+}
+
+/* Video clip: it owns the frame while it plays, the still stays as its poster. */
+[data-prism-wallpaper-video] {
+  position: absolute;
+  inset: 0;
+  display: none;
+  background: #000;
+}
+
+[data-dsh-prism][data-prism-wallpaper-video-on] [data-prism-wallpaper-video] {
+  display: block;
 }
 
 @keyframes prism-wallpaper-in {

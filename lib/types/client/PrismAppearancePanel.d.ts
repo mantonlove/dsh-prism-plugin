@@ -2,7 +2,7 @@ import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepsee
 import type { NS } from './locales.ts';
 import type { createPrismRowStore } from './settings-store.ts';
 import { type PrismFontChoice, type PrismMaterial, type PrismPreset, type PrismZones } from './prism-settings.ts';
-import type { WallpaperError } from './wallpaper.ts';
+import { type WallpaperError } from './wallpaper.ts';
 /** Injected business face: the layer remains the single writer. */
 export interface PrismAppearanceInjected {
     setEnabled: (enabled: boolean) => void;

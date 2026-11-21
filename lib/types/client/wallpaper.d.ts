@@ -68,4 +68,45 @@ export declare function analyzeLuminance(dataUrl: string): Promise<number>;
  * @returns veil alpha, 0-0.75.
  */
 export declare function veilAlpha(luminance: number, dark: boolean): number;
+/** Maximum accepted video wallpaper file size, bytes (40MB). */
+export declare const MAX_VIDEO_BYTES: number;
+/** Longest clip accepted, seconds. Longer files cost battery for no gain. */
+export declare const MAX_VIDEO_DURATION = 60;
+/** Longest edge the poster frame is captured at, px. */
+export declare const MAX_POSTER_EDGE = 1280;
+/** Prefix that turns a stored clip id into the string kept in settings. */
+export declare const VIDEO_PREFIX = "video:";
+/** Whether the picked file is a video the layer can play. */
+export declare function isVideoFile(file: File): boolean;
+/** Whether a settings entry points at a clip instead of an inline image. */
+export declare function isVideoRef(source: string): boolean;
+/** The clip id inside a `video:<id>` reference (empty when not a reference). */
+export declare function videoIdOf(source: string): string;
+/** Build the settings entry for a stored clip. */
+export declare function videoRef(id: string): string;
+/** What a successful video ingestion yields. */
+export interface VideoIngest {
+    /** The `video:<id>` string to store in settings. */
+    ref: string;
+    /** Average luminance of the poster frame, 0-1. */
+    luminance: number;
+    /** Poster JPEG, or null when the browser could not capture a frame. */
+    poster: Blob | null;
+    /** Clip length, seconds (0 when unknown). */
+    duration: number;
+    /** Intrinsic pixel size (0 when unknown). */
+    width: number;
+    height: number;
+}
+/**
+ * Read, validate, and describe a video wallpaper without storing it.
+ *
+ * The caller persists the blob and poster through the video store; this
+ * function only measures the clip, captures a poster frame, and derives the
+ * luminance the backdrop veil needs.
+ * @param file - picked video file.
+ * @param id - id the caller will store the clip under.
+ * @returns the ingestion result, or a typed rejection.
+ */
+export declare function readVideo(file: File, id: string): Promise<VideoIngest | WallpaperError>;
 //# sourceMappingURL=wallpaper.d.ts.map

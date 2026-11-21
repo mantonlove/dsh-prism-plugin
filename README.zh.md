@@ -25,6 +25,7 @@
 | 功能 | Feature |
 |---|---|
 | 上传自己的照片或 GIF 动图，支持一次多选 | Upload your own photos or GIFs, one or many at a time |
+| 照片、GIF 与 MP4/WebM 视频背景；视频存 IndexedDB，不占设置配额 | Photo, GIF, and MP4/WebM backdrops stored in IndexedDB so clips never eat the settings quota |
 | 亮色与暗色各一套背景列表，跟随明暗模式切换 | Separate light and dark playlists that follow the appearance mode |
 | 每张图独立参与轮播，右下角角标决定是否轮播 | Per-image carousel selection: the corner badge decides which images rotate |
 | 未选中的图变模糊起雾，重新选中即恢复清晰 | Unselected images recede behind blur and frost, and sharpen when picked again |
@@ -80,7 +81,7 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 - 清透、磨砂、毛绒三种材质；模糊与全局磨砂感；主背景、侧边栏、卡片、输入框、菜单弹层、聊天气泡六区独立透明度。
 - 主题色、背景色、明暗文字颜色均支持色号输入与取色器。
-- **自定义背景图**：上传自己的照片或 GIF 动图（支持一次选多张），明暗模式分别管理图片列表；固定显示与自动轮播可切换。每张缩略图右下角的勾选框决定它是否参与轮播（未勾选的图片会变模糊、蒙上磨砂层），拖动缩略图左上角的手柄即可调整轮播先后顺序。
+- **自定义背景（静态或动态）**：上传照片、GIF 动图或 MP4/WebM 视频（支持一次选多个），明暗模式分别管理列表；视频存 IndexedDB，静音循环播放，窗口失焦自动暂停；固定显示与自动轮播可切换。每张缩略图右下角的勾选框决定它是否参与轮播（未勾选的图片会变模糊、蒙上磨砂层），拖动缩略图左上角的手柄即可调整轮播先后顺序。
 - 弹簧阻尼调节、文字大小与字体、动态极光。
 - 总开关一键还原原生界面；设置通过 `localStorage` 持久化并跨标签页同步；支持减少动态效果。
 - 主题导出只包含外观参数，不包含壁纸图片、壁纸播放列表或总开关状态。

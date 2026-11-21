@@ -24,7 +24,8 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 import { buildFontOverrides } from './fonts.ts'
 import { buildTokenOverrides } from './tokens.ts'
 import { advanceSpring, clampValue, createSpring, springSettled, type SpringState } from './spring.ts'
-import { analyzeLuminance, MAX_WALLPAPER_BATCH, readWallpaper, veilAlpha, type WallpaperError } from './wallpaper.ts'
+import { analyzeLuminance, isVideoFile, isVideoRef, MAX_WALLPAPER_BATCH, readVideo, readWallpaper, veilAlpha, videoIdOf, type WallpaperError } from './wallpaper.ts'
+import { deleteVideo, getVideo, putVideo } from './video-store.ts'
 import { makeCustomTheme, normalizeThemeValues, parseThemeDocument, serializeTheme } from './theme-io.ts'
 import {
   CODE_FONT_CHOICES, FONT_CHOICES, MATERIALS, MAX_CUSTOM_THEMES, PRESETS, PRISM_THEME_LIMIT_ERROR, PRISM_THEME_PERSIST_ERROR, RANGES, carouselIndices, readSettings, writeSettings,
@@ -33,6 +34,14 @@ import {
 
 /** html attribute selecting the Prism layer (all CSS hooks are gated on it). */
 export const PRISM_ATTRIBUTE = 'data-dsh-prism'
+
+/** Stable-enough id for one stored clip (crypto.randomUUID when available). */
+function makeClipId(): string {
+  const uuid = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+  return `v-${uuid}`
+}
 
 /** The layer's identity in the theme override stack (inspection-visible). */
 const OVERRIDE_SOURCE = '@deepseek-ai/dsh-client-ui-prism'
@@ -84,6 +93,14 @@ export class PrismLayer {
   private rafId: number | undefined
   private lastFrame: number | undefined
   private rotateTimer: number | undefined
+  /** Object URL of the clip currently on screen (revoked on swap/dispose). */
+  private clipUrl: string | undefined
+  /** Object URL of its poster frame. */
+  private posterUrl: string | undefined
+  /** Id of the clip the layer believes is loaded. */
+  private clipId: string | undefined
+  /** Guards async loads so a fast rotation cannot paint a stale clip. */
+  private clipToken = 0
   private readonly knobs = new Map<KnobKey, DampedKnob>()
   private readonly notify: () => void
   /** Trailing-debounce timer for localStorage writes (the document can carry
@@ -121,6 +138,10 @@ export class PrismLayer {
         this.signal()
       }
       window.addEventListener('storage', onStorage)
+      const onPresence = (): void => { this.playClip() }
+      window.addEventListener('blur', onPresence)
+      window.addEventListener('focus', onPresence)
+      document.addEventListener('visibilitychange', onPresence)
       const onTheme = (): void => {
         this.dark = this.resolveScheme()
         this.applySchemeDependent()
@@ -132,6 +153,9 @@ export class PrismLayer {
       window.addEventListener('pagehide', onPageHide)
       return () => {
         window.removeEventListener('storage', onStorage)
+        window.removeEventListener('blur', onPresence)
+        window.removeEventListener('focus', onPresence)
+        document.removeEventListener('visibilitychange', onPresence)
         window.removeEventListener('pagehide', onPageHide)
         this.flushPersist()
         this.unmount()
@@ -364,6 +388,35 @@ export class PrismLayer {
     const dims: number[] = []
     const errors: WallpaperError[] = []
     for (const file of files.slice(0, MAX_WALLPAPER_BATCH)) {
+      if (isVideoFile(file)) {
+        const id = makeClipId()
+        const ingest = await readVideo(file, id)
+        if ('kind' in ingest) {
+          errors.push(ingest)
+          continue
+        }
+        try {
+          // The clip lives in IndexedDB; settings only keep the reference so a
+          // multi-megabyte file never enters the localStorage document.
+          await putVideo({
+            id,
+            blob: file,
+            poster: ingest.poster,
+            duration: ingest.duration,
+            luminance: ingest.luminance,
+            width: ingest.width,
+            height: ingest.height,
+            bytes: file.size,
+            addedAt: Date.now(),
+          })
+        } catch {
+          errors.push({ kind: 'read' })
+          continue
+        }
+        urls.push(ingest.ref)
+        dims.push(ingest.luminance)
+        continue
+      }
       const result = await readWallpaper(file)
       if (typeof result !== 'string') {
         errors.push(result)
@@ -395,6 +448,10 @@ export class PrismLayer {
 
   /** Remove one scheme's wallpaper at a rotation-list index. */
   clearWallpaper(scheme: 'dark' | 'light', index: number): void {
+    const target = (scheme === 'dark' ? this.settings.wallpaperDark : this.settings.wallpaperLight)[index]
+    if (target !== undefined && isVideoRef(target)) {
+      void deleteVideo(videoIdOf(target)).catch(() => undefined)
+    }
     if (scheme === 'dark') {
       const urls = this.settings.wallpaperDark.filter((_, i) => i !== index)
       const dims = this.settings.wallpaperDimDark.filter((_, i) => i !== index)
@@ -509,6 +566,7 @@ export class PrismLayer {
     document.documentElement.removeAttribute('data-prism-material')
     document.documentElement.removeAttribute('data-prism-still')
     document.documentElement.removeAttribute('data-prism-wallpaper-on')
+    this.stopClip()
     removeAmbientScene()
     this.tokenDisposer?.()
     this.tokenDisposer = undefined
@@ -558,6 +616,78 @@ export class PrismLayer {
     return Math.min(urls.length - 1, Math.max(0, pinned))
   }
 
+  /** Pause the clip and drop the URLs it was using. */
+  private stopClip(): void {
+    const clip = document.querySelector<HTMLVideoElement>('[data-prism-wallpaper-video]')
+    if (clip !== null) {
+      clip.pause()
+      clip.removeAttribute('src')
+      clip.removeAttribute('poster')
+      clip.load()
+    }
+    if (this.clipUrl !== undefined) URL.revokeObjectURL(this.clipUrl)
+    if (this.posterUrl !== undefined) URL.revokeObjectURL(this.posterUrl)
+    this.clipUrl = undefined
+    this.posterUrl = undefined
+    this.clipId = undefined
+    this.clipToken += 1
+    document.documentElement.removeAttribute('data-prism-wallpaper-video-on')
+  }
+
+  /** Whether the clip is allowed to move: visible tab, focused window, motion allowed. */
+  private clipShouldPlay(): boolean {
+    return !prefersReducedMotion() && document.visibilityState !== 'hidden' && (typeof document.hasFocus !== 'function' || document.hasFocus())
+  }
+
+  /** Resume the clip when policy allows it. */
+  private playClip(): void {
+    const clip = document.querySelector<HTMLVideoElement>('[data-prism-wallpaper-video]')
+    if (clip === null || clip.src === '') return
+    if (!this.clipShouldPlay()) {
+      clip.pause()
+      return
+    }
+    const playing = clip.play()
+    if (playing !== undefined) void playing.catch(() => undefined)
+  }
+
+  /** Load a clip from IndexedDB and hand it to the video element. */
+  private async showClip(id: string): Promise<void> {
+    if (this.clipId === id && this.clipUrl !== undefined) {
+      this.playClip()
+      return
+    }
+    const token = ++this.clipToken
+    let record = null
+    try {
+      record = await getVideo(id)
+    } catch {
+      record = null
+    }
+    if (token !== this.clipToken) return
+    this.stopClip()
+    if (record === null) {
+      // Nothing to paint (clip deleted, or IndexedDB unavailable in this
+      // profile): drop the layer instead of leaving an empty backdrop.
+      document.documentElement.removeAttribute('data-prism-wallpaper-on')
+      return
+    }
+    this.clipToken = token
+    this.clipId = id
+    this.clipUrl = URL.createObjectURL(record.blob)
+    const clip = document.querySelector<HTMLVideoElement>('[data-prism-wallpaper-video]')
+    if (clip === null) return
+    if (record.poster !== null) {
+      this.posterUrl = URL.createObjectURL(record.poster)
+      clip.poster = this.posterUrl
+    }
+    clip.src = this.clipUrl
+    clip.loop = true
+    clip.muted = true
+    document.documentElement.setAttribute('data-prism-wallpaper-video-on', '')
+    this.playClip()
+  }
+
   /** Point the wallpaper layer at the active scheme's rotating image. */
   private applyWallpaperSource(): void {
     const s = this.settings
@@ -566,14 +696,20 @@ export class PrismLayer {
     const url = urls.length === 0 ? '' : (urls[index] ?? '')
     document.documentElement.toggleAttribute('data-prism-wallpaper-on', url !== '')
     const image = document.querySelector<HTMLImageElement>('[data-prism-wallpaper-img]')
-    if (image !== null) {
-      if (url === '') {
-        image.removeAttribute('src')
-      } else if (image.getAttribute('src') !== url) {
-        image.setAttribute('src', url)
-        image.style.animation = 'none'
-        void image.offsetWidth
-        image.style.animation = ''
+    if (isVideoRef(url)) {
+      image?.removeAttribute('src')
+      void this.showClip(videoIdOf(url))
+    } else {
+      this.stopClip()
+      if (image !== null) {
+        if (url === '') {
+          image.removeAttribute('src')
+        } else if (image.getAttribute('src') !== url) {
+          image.setAttribute('src', url)
+          image.style.animation = 'none'
+          void image.offsetWidth
+          image.style.animation = ''
+        }
       }
     }
     this.scheduleRotation(urls)
@@ -849,7 +985,13 @@ function ensureAmbientScene(): void {
   const image = document.createElement('img')
   image.dataset.prismWallpaperImg = ''
   image.alt = ''
-  wallpaper.appendChild(image)
+  const clip = document.createElement('video')
+  clip.dataset.prismWallpaperVideo = ''
+  clip.muted = true
+  clip.loop = true
+  clip.playsInline = true
+  clip.preload = 'metadata'
+  wallpaper.append(image, clip)
   const brightness = document.createElement('div')
   brightness.dataset.prismBrightness = ''
   root.append(aurora, wallpaper, brightness)

@@ -16,6 +16,14 @@ export declare class PrismLayer {
     private rafId;
     private lastFrame;
     private rotateTimer;
+    /** Object URL of the clip currently on screen (revoked on swap/dispose). */
+    private clipUrl;
+    /** Object URL of its poster frame. */
+    private posterUrl;
+    /** Id of the clip the layer believes is loaded. */
+    private clipId;
+    /** Guards async loads so a fast rotation cannot paint a stale clip. */
+    private clipToken;
     private readonly knobs;
     private readonly notify;
     /** Trailing-debounce timer for localStorage writes (the document can carry
@@ -145,6 +153,14 @@ export declare class PrismLayer {
      *  stops the loop). Excluding every image falls back to the pinned one
      *  instead of blanking the backdrop. */
     private wallpaperIndex;
+    /** Pause the clip and drop the URLs it was using. */
+    private stopClip;
+    /** Whether the clip is allowed to move: visible tab, focused window, motion allowed. */
+    private clipShouldPlay;
+    /** Resume the clip when policy allows it. */
+    private playClip;
+    /** Load a clip from IndexedDB and hand it to the video element. */
+    private showClip;
     /** Point the wallpaper layer at the active scheme's rotating image. */
     private applyWallpaperSource;
     /** Re-evaluate the rotation index exactly at the next boundary. */

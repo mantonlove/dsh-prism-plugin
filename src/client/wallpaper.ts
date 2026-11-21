@@ -140,3 +140,192 @@ export function veilAlpha(luminance: number, dark: boolean): number {
   if (dark) return Math.min(0.75, Math.max(0, luminance - 0.32) * 0.85)
   return Math.min(0.75, Math.max(0, 0.68 - luminance) * 0.85)
 }
+
+/** Maximum accepted video wallpaper file size, bytes (40MB). */
+export const MAX_VIDEO_BYTES = 40 * 1024 * 1024
+
+/** Longest clip accepted, seconds. Longer files cost battery for no gain. */
+export const MAX_VIDEO_DURATION = 60
+
+/** Longest edge the poster frame is captured at, px. */
+export const MAX_POSTER_EDGE = 1280
+
+/** Prefix that turns a stored clip id into the string kept in settings. */
+export const VIDEO_PREFIX = 'video:'
+
+/** Whether the picked file is a video the layer can play. */
+export function isVideoFile(file: File): boolean {
+  return file.type.startsWith('video/')
+}
+
+/** Whether a settings entry points at a clip instead of an inline image. */
+export function isVideoRef(source: string): boolean {
+  return source.startsWith(VIDEO_PREFIX) && source.length > VIDEO_PREFIX.length
+}
+
+/** The clip id inside a `video:<id>` reference (empty when not a reference). */
+export function videoIdOf(source: string): string {
+  return isVideoRef(source) ? source.slice(VIDEO_PREFIX.length) : ''
+}
+
+/** Build the settings entry for a stored clip. */
+export function videoRef(id: string): string {
+  return `${VIDEO_PREFIX}${id}`
+}
+
+/** What a successful video ingestion yields. */
+export interface VideoIngest {
+  /** The `video:<id>` string to store in settings. */
+  ref: string
+  /** Average luminance of the poster frame, 0-1. */
+  luminance: number
+  /** Poster JPEG, or null when the browser could not capture a frame. */
+  poster: Blob | null
+  /** Clip length, seconds (0 when unknown). */
+  duration: number
+  /** Intrinsic pixel size (0 when unknown). */
+  width: number
+  height: number
+}
+
+/**
+ * Load a video file's metadata by pointing an off-DOM element at it.
+ * @param url - object URL for the file.
+ * @returns the element, or null when metadata never arrives.
+ */
+function loadVideo(url: string): Promise<HTMLVideoElement | null> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.muted = true
+    video.playsInline = true
+    const settle = (value: HTMLVideoElement | null) => {
+      video.onloadedmetadata = null
+      video.onerror = null
+      resolve(value)
+    }
+    video.onloadedmetadata = () => { settle(video) }
+    video.onerror = () => { settle(null) }
+    video.src = url
+    window.setTimeout(() => { settle(null) }, 8000)
+  })
+}
+
+/**
+ * Draw one frame of a video onto a canvas and read it back.
+ * @param video - element already positioned on the frame.
+ * @returns poster blob (may be null) and the frame's average luminance.
+ */
+function captureFrame(video: HTMLVideoElement): { poster: Blob | null; luminance: number } {
+  const width = video.videoWidth || 0
+  const height = video.videoHeight || 0
+  if (width === 0 || height === 0) return { poster: null, luminance: UNKNOWN_LUMINANCE }
+  const scale = Math.min(1, MAX_POSTER_EDGE / Math.max(width, height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.max(1, Math.round(width * scale))
+  canvas.height = Math.max(1, Math.round(height * scale))
+  const context = canvas.getContext('2d')
+  if (context === null) return { poster: null, luminance: UNKNOWN_LUMINANCE }
+  try {
+    context.drawImage(video, 0, 0, canvas.width, canvas.height)
+  } catch {
+    return { poster: null, luminance: UNKNOWN_LUMINANCE }
+  }
+  let luminance = UNKNOWN_LUMINANCE
+  try {
+    const sample = document.createElement('canvas')
+    sample.width = 8
+    sample.height = 8
+    const sampleContext = sample.getContext('2d')
+    if (sampleContext !== null) {
+      sampleContext.drawImage(canvas, 0, 0, 8, 8)
+      const data = sampleContext.getImageData(0, 0, 8, 8).data
+      let sum = 0
+      let count = 0
+      for (let i = 0; i < data.length; i += 4) {
+        sum += 0.2126 * ((data[i] ?? 0) / 255) + 0.7152 * ((data[i + 1] ?? 0) / 255) + 0.0722 * ((data[i + 2] ?? 0) / 255)
+        count += 1
+      }
+      if (count > 0) luminance = sum / count
+    }
+  } catch {
+    luminance = UNKNOWN_LUMINANCE
+  }
+  let poster: Blob | null = null
+  try {
+    const dataUrl = canvas.toDataURL('image/jpeg', WALLPAPER_JPEG_QUALITY)
+    poster = dataUrlToBlob(dataUrl)
+  } catch {
+    poster = null
+  }
+  return { poster, luminance }
+}
+
+/** Convert a data URL into a Blob without another async hop. */
+function dataUrlToBlob(dataUrl: string): Blob | null {
+  const comma = dataUrl.indexOf(',')
+  if (comma < 0) return null
+  const header = dataUrl.slice(0, comma)
+  const body = dataUrl.slice(comma + 1)
+  const mime = /^data:([^;]+)/.exec(header)?.[1] ?? 'image/jpeg'
+  if (!header.includes(';base64')) return new Blob([decodeURIComponent(body)], { type: mime })
+  try {
+    const binary = atob(body)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+    return new Blob([bytes], { type: mime })
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Read, validate, and describe a video wallpaper without storing it.
+ *
+ * The caller persists the blob and poster through the video store; this
+ * function only measures the clip, captures a poster frame, and derives the
+ * luminance the backdrop veil needs.
+ * @param file - picked video file.
+ * @param id - id the caller will store the clip under.
+ * @returns the ingestion result, or a typed rejection.
+ */
+export async function readVideo(file: File, id: string): Promise<VideoIngest | WallpaperError> {
+  if (file.size > MAX_VIDEO_BYTES) return { kind: 'size', bytes: file.size }
+  if (file.size === 0) return { kind: 'read' }
+  const url = URL.createObjectURL(file)
+  try {
+    const video = await loadVideo(url)
+    if (video === null) return { kind: 'decode' }
+    const duration = Number.isFinite(video.duration) ? video.duration : 0
+    if (duration > MAX_VIDEO_DURATION) {
+      return { kind: 'size', bytes: file.size }
+    }
+    // Park the playhead slightly inside the clip so the poster is not a black frame.
+    const target = duration > 0 ? Math.min(0.15, duration / 3) : 0
+    await new Promise<void>((resolve) => {
+      const done = () => {
+        video.onseeked = null
+        resolve()
+      }
+      video.onseeked = done
+      try {
+        video.currentTime = target
+      } catch {
+        done()
+        return
+      }
+      window.setTimeout(done, 2000)
+    })
+    const { poster, luminance } = captureFrame(video)
+    return {
+      ref: videoRef(id),
+      luminance,
+      poster,
+      duration,
+      width: video.videoWidth || 0,
+      height: video.videoHeight || 0,
+    }
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}

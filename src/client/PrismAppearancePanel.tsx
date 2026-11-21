@@ -4,7 +4,7 @@
  * tabs keep the full theme controls compact; every write still goes through
  * the damped PrismLayer, so presets and individual knobs preview live.
  */
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls the `settings.general.item` SlotMap merge.
@@ -18,12 +18,57 @@ import {
   type PrismCustomTheme, type PrismFontChoice, type PrismMaterial, type PrismPreset, type PrismThemeValues, type PrismZones,
 } from './prism-settings.ts'
 import { PRISM_THEME_MAX_BYTES } from './theme-io.ts'
-import type { WallpaperError } from './wallpaper.ts'
+import { isVideoRef, videoIdOf, type WallpaperError } from './wallpaper.ts'
+import { getVideo } from './video-store.ts'
 import css from './PrismAppearancePanel.module.css'
 
 interface WallpaperErrorState {
   scheme: 'dark' | 'light'
   message: string
+}
+
+/**
+ * One gallery thumbnail. Inline images render as they are; clips render their
+ * poster frame (stored beside the clip in IndexedDB) plus a play mark, so the
+ * grid never has to decode a video just to show a tile.
+ */
+function WallpaperThumb({ source }: { source: string }): React.JSX.Element {
+  const video = isVideoRef(source)
+  const id = video ? videoIdOf(source) : ''
+  const [poster, setPoster] = useState<string | undefined>(undefined)
+  const [duration, setDuration] = useState(0)
+  useEffect(() => {
+    if (id === '') return
+    let alive = true
+    let made: string | undefined
+    void getVideo(id).then((record) => {
+      if (!alive || record === null) return
+      setDuration(record.duration)
+      if (record.poster === null) return
+      made = URL.createObjectURL(record.poster)
+      setPoster(made)
+    }).catch(() => undefined)
+    return () => {
+      alive = false
+      if (made !== undefined) URL.revokeObjectURL(made)
+    }
+  }, [id])
+  if (!video) return <img className={css.wallpaperThumb} src={source} alt="" draggable={false} />
+  return (
+    <span className={css.wallpaperClip}>
+      {poster !== undefined
+        ? <img className={css.wallpaperThumb} src={poster} alt="" draggable={false} />
+        : <span className={css.wallpaperClipVoid} aria-hidden="true" />}
+      <span className={css.wallpaperClipMark} aria-hidden="true">▶</span>
+      {duration > 0 && <span className={css.wallpaperClipTime}>{formatClip(duration)}</span>}
+    </span>
+  )
+}
+
+/** Clip length as m:ss. */
+function formatClip(seconds: number): string {
+  const total = Math.max(0, Math.round(seconds))
+  return `${String(Math.floor(total / 60))}:${String(total % 60).padStart(2, '0')}`
 }
 
 /** Injected business face: the layer remains the single writer. */
@@ -401,7 +446,7 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
                         pinWallpaper(scheme, index)
                       }}
                     >
-                      <img className={css.wallpaperThumb} src={url} alt="" draggable={false} />
+                      <WallpaperThumb source={url} />
                       <span className={css.wallpaperFrost} aria-hidden="true" />
                       {!wallpaperLoop && pinned === index && (
                         <span className={`${css.wallpaperBadge} ${css.wallpaperBadgeOn}`} aria-hidden="true">✓</span>
@@ -634,7 +679,7 @@ export function PrismAppearancePanel(props: PrismAppearanceInjected & PrismAppea
           </div>
         </>
       )}
-      <input ref={wallpaperFileRef} className={css.fileInput} type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,image/avif" onChange={event => { void onWallpaperFile(event) }} />
+      <input ref={wallpaperFileRef} className={css.fileInput} type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,image/avif,video/mp4,video/webm,video/quicktime" onChange={event => { void onWallpaperFile(event) }} />
       <input ref={importFileRef} className={css.fileInput} type="file" accept=".json,application/json" onChange={event => { void onImportFile(event) }} />
     </div>
   )

@@ -25,6 +25,7 @@
 | Feature | 功能 |
 |---|---|
 | Upload your own photos or GIFs, one or many at a time | 上传自己的照片或 GIF 动图，支持一次多选 |
+| Photo, GIF, and MP4/WebM backdrops stored in IndexedDB so clips never eat the settings quota | 照片、GIF 与 MP4/WebM 视频背景；视频存 IndexedDB，不占设置配额 |
 | Separate light and dark playlists that follow the appearance mode | 亮色与暗色各一套背景列表，跟随明暗模式切换 |
 | Per-image carousel selection: the corner badge decides which images rotate | 每张图独立参与轮播，右下角角标决定是否轮播 |
 | Unselected images recede behind blur and frost, and sharpen when picked again | 未选中的图变模糊起雾，重新选中即恢复清晰 |
@@ -80,7 +81,7 @@ dsh plugin --profile web remove dsh-client-ui-prism
 
 - Clear, frosted, and velvet materials; blur and global frost; six independent zone opacities for the base, sidebar, cards, inputs, overlays, and bubbles.
 - Hex and color-picker controls for the accent, backdrop, and light/dark text colors.
-- **Custom background images:** upload several photos or animated GIFs at once into separate light/dark playlists; switch between fixed and automatic playback. The checkbox in each thumbnail's bottom-right corner decides whether that image joins the carousel (unchecked ones blur behind a frosted veil), and dragging the top-left grip changes the playback order.
+- **Custom backgrounds, still or moving:** upload several photos, animated GIFs, or MP4/WebM clips at once into separate light/dark playlists (clips are stored in IndexedDB, play muted on a loop, and pause when the window loses focus); switch between fixed and automatic playback. The checkbox in each thumbnail's bottom-right corner decides whether that image joins the carousel (unchecked ones blur behind a frosted veil), and dragging the top-left grip changes the playback order.
 - Spring-damped adjustments, font scale and family, and animated aurora.
 - A master switch that restores the stock interface, persistent `localStorage` settings, cross-tab synchronization, and reduced-motion support.
 - Theme exports contain appearance settings only. Wallpaper images, wallpaper playlists, and the master-switch state are never included.
