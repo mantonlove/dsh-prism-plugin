@@ -3,7 +3,7 @@ import { basename, relative, resolve } from 'node:path'
 import { transform } from 'lightningcss'
 import { defineConfig, type UserConfig } from 'tsdown'
 
-const PLUGIN_ID = '@deepseek-ai/dsh-client-ui-prism'
+const PLUGIN_ID = 'dsh-prism-plugin'
 const CLIENT_EXTERNALS = [
   'react',
   'react/jsx-runtime',

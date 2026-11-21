@@ -53,7 +53,15 @@ github:mantonlove/dsh-prism-plugin
 
 本地开发可改用 `link:/绝对路径/dsh-prism-plugin`。链接安装支持热更新；如未自动生效，刷新 Web GUI 即可。
 
-### Web profile 命令行
+### npm
+
+```sh
+dsh plugin --profile web add dsh-prism-plugin
+```
+
+包已发布到 npm，包名 `dsh-prism-plugin`。`@deepseek-ai/*` 这组 peer 依赖由 DSH 宿主提供，请用 DSH 的插件命令安装，不要在其他项目里直接 `npm install`。
+
+也可以直接从仓库安装：
 
 ```sh
 dsh plugin --profile web add github:mantonlove/dsh-prism-plugin
@@ -64,8 +72,19 @@ dsh plugin --profile web add github:mantonlove/dsh-prism-plugin
 卸载：
 
 ```sh
-dsh plugin --profile web remove dsh-client-ui-prism
+dsh plugin --profile web remove dsh-prism-plugin
 ```
+
+> **从 v2 升级？** v3 把包名改成了 `dsh-prism-plugin`。请先卸掉旧条目：两个包声明的都是同一个 `ui-prism` 层，同一时间只应保留其中一个：
+>
+> ```sh
+> dsh plugin --profile web remove @deepseek-ai/dsh-client-ui-prism
+> ```
+
+## v3 新特性
+
+- **npm 分发**：已发布到 npm，包名 `dsh-prism-plugin`，可直接按包名安装。插件市场是否显示下载量，取决于该平台自己的统计口径。
+- **包名迁移**：旧的 `@deepseek-ai/dsh-client-ui-prism` 停用；`ui-prism` 层 id 与 `dsh.ui-prism.settings.v1` 存储键保持不变，原有主题、壁纸与偏好都会沿用。
 
 ## v2 新特性
 

@@ -53,7 +53,15 @@ github:mantonlove/dsh-prism-plugin
 
 For local development, use `link:/absolute/path/to/dsh-prism-plugin` instead. Linked builds can be hot-applied; refresh the Web GUI if necessary.
 
-### Web profile CLI
+### npm
+
+```sh
+dsh plugin --profile web add dsh-prism-plugin
+```
+
+The package is published on npm as `dsh-prism-plugin`. DSH supplies the `@deepseek-ai/*` peer packages, so install it through the DSH plugin command rather than a plain `npm install` inside another project.
+
+You can also install straight from the repository:
 
 ```sh
 dsh plugin --profile web add github:mantonlove/dsh-prism-plugin
@@ -64,8 +72,19 @@ Restart `dsh web` and refresh the page. Open **设置 → 通用设置 → 外�
 Uninstall:
 
 ```sh
-dsh plugin --profile web remove dsh-client-ui-prism
+dsh plugin --profile web remove dsh-prism-plugin
 ```
+
+> **Upgrading from v2?** v3 renamed the package to `dsh-prism-plugin`. Remove the old entry first: both packages declare the same `ui-prism` layer, so only one of them should be installed at a time:
+>
+> ```sh
+> dsh plugin --profile web remove @deepseek-ai/dsh-client-ui-prism
+> ```
+
+## What’s new in v3
+
+- **npm distribution:** published on npm as `dsh-prism-plugin`, so the plugin can be installed by package name. Whether a plugin market reports download numbers depends on that platform's own statistics.
+- **Package rename:** the old `@deepseek-ai/dsh-client-ui-prism` name is retired; the `ui-prism` layer id and the `dsh.ui-prism.settings.v1` storage key are unchanged, so saved themes, wallpapers, and preferences carry over.
 
 ## What’s new in v2
 

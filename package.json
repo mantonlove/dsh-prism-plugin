@@ -1,7 +1,7 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-prism",
+  "name": "dsh-prism-plugin",
   "description": "DSH Background: photo, GIF, and MP4/WebM backdrops for the DSH Web GUI, with per-image carousel picks, drag ordering, glassmorphism, typography, accent colors, aurora, and portable themes",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -96,5 +96,18 @@
     "watch": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
-  }
+  },
+  "homepage": "https://github.com/mantonlove/dsh-prism-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/mantonlove/dsh-prism-plugin/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "theme",
+    "wallpaper",
+    "glassmorphism",
+    "background",
+    "prism"
+  ]
 }

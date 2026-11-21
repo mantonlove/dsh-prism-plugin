@@ -1,6 +1,6 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-client-ui-prism`.
- * @module @deepseek-ai/dsh-client-ui-prism/invariant
+ * Package-owned invariant companion for `dsh-prism-plugin`.
+ * @module dsh-prism-plugin/invariant
  */
 import type { Context } from '@deepseek-ai/cordis';
 /** Cordis companion plugin name. */

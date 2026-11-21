@@ -44,7 +44,7 @@ function makeClipId(): string {
 }
 
 /** The layer's identity in the theme override stack (inspection-visible). */
-const OVERRIDE_SOURCE = '@deepseek-ai/dsh-client-ui-prism'
+const OVERRIDE_SOURCE = 'dsh-prism-plugin'
 
 /** Numeric knob ids participating in the damping loop. */
 type KnobKey =
