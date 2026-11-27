@@ -54,24 +54,24 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
       'rgb(34 38 47 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-base, 1)))',
     ),
     '--dsw-alias-bg-layer-2': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-bg-layer-3': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-bg-overlay': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-overlay, 1))',
+      'rgb(34 38 47 / var(--prism-zone-overlay, 1))',
     ),
     '--dsw-alias-bg-module-platform': pair(
-      'rgb(255 255 255 / calc(0.8 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-base, 1)))',
-      'rgb(34 38 47 / calc(0.8 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-base, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-bg-multi-select': pair(
-      'rgb(255 255 255 / calc(0.8 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.8 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-bg-skeleton': pair(
       'rgb(19 45 83 / calc(0.06 * var(--prism-frost)))',
@@ -82,12 +82,12 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
     // read their own card tokens rather than bg-layer-2, so they join the
     // same glass recipe instead of falling back to opaque neutral slabs.
     '--dsw-alias-card-fill': pair(
-      'rgb(255 255 255 / calc(0.78 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.78 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-card-fill-hover': pair(
-      'rgb(255 255 255 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-card-tile-fill': pair(
       'rgb(255 255 255 / calc(0.55 * var(--prism-frost)))',
@@ -147,16 +147,16 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
     '--dsw-alias-button-info-fill': accentColor(),
     '--dsw-alias-button-info-hover': accentColor(),
     '--dsw-alias-button-elevated-fill': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-button-floating-fill': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-button-floating-hover': pair(
-      'rgb(240 245 251 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(40 45 60 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(240 245 251 / var(--prism-zone-card, 1))',
+      'rgb(40 45 60 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-button-contrast-fill': pair('#26364D', '#EAF2FC'),
     '--dsw-alias-button-ghost-active-fill': pair(
@@ -184,8 +184,8 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
     ),
     '--dsw-alias-interactive-bg-hover-danger': pair('rgb(236 19 19 / 0.05)', 'rgb(242 90 90 / 0.14)'),
     '--dsw-alias-interactive-bg-hover-solid': pair(
-      'rgb(240 245 251 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(40 45 60 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(240 245 251 / var(--prism-zone-card, 1))',
+      'rgb(40 45 60 / var(--prism-zone-card, 1))',
     ),
 
     // Text ink: secondary tones scale with the contrast knob.
@@ -204,28 +204,28 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
 
     // Markdown / code surfaces (zone card glass).
     '--dsw-alias-markdown-code-block': pair(
-      'rgb(240 245 251 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(13 20 31 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(240 245 251 / var(--prism-zone-card, 1))',
+      'rgb(13 20 31 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-markdown-code-block-banner': pair(
-      'rgb(245 248 253 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(18 27 41 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(245 248 253 / var(--prism-zone-card, 1))',
+      'rgb(18 27 41 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-markdown-inline-code': pair(
-      'rgb(228 237 248 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(23 35 52 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(228 237 248 / var(--prism-zone-card, 1))',
+      'rgb(23 35 52 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-markdown-citation': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(26 37 52 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(26 37 52 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-markdown-tag': pair(
-      'rgb(228 237 248 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(22 33 48 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(228 237 248 / var(--prism-zone-card, 1))',
+      'rgb(22 33 48 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-markdown-placeholder': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
     '--dsw-alias-markdown-code-segment-selected': pair('#FFFFFF', '#1C2A3D'),
     '--dsw-alias-markdown-code-segment-unselected': pair('#F0F5FB', '#0F1723'),
@@ -290,37 +290,37 @@ export function buildTokenOverrides(): ThemeTokenOverrides {
       'hsl(var(--prism-accent-h) var(--prism-accent-s) 22% / calc(0.7 * var(--prism-frost)))',
     ),
     '--dsw-specific-bubble': pair(
-      'rgb(255 255 255 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-bubble, 1)))',
-      'rgb(34 38 47 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-bubble, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-bubble, 1))',
+      'rgb(34 38 47 / var(--prism-zone-bubble, 1))',
     ),
     '--dsw-specific-bubble-highlight': pair(
-      'rgb(255 255 255 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-bubble, 1)))',
-      'rgb(34 38 47 / calc(0.9 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-bubble, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-bubble, 1))',
+      'rgb(34 38 47 / var(--prism-zone-bubble, 1))',
     ),
     '--dsw-specific-input-major': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-input, 1))',
+      'rgb(34 38 47 / var(--prism-zone-input, 1))',
     ),
     '--dsw-specific-file-upload-track': pair('rgb(19 45 83 / 0.08)', 'rgb(148 180 220 / 0.12)'),
     '--dsw-specific-login-input': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-input, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-input, 1))',
+      'rgb(34 38 47 / var(--prism-zone-input, 1))',
     ),
     '--dsw-specific-menu': pair(
-      'rgb(255 255 255 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
-      'rgb(34 38 47 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-overlay, 1))',
+      'rgb(34 38 47 / var(--prism-zone-overlay, 1))',
     ),
     '--dsw-alias-hovercard-bg': pair(
-      'rgb(255 255 255 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
-      'rgb(34 38 47 / calc(0.88 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-overlay, 1))',
+      'rgb(34 38 47 / var(--prism-zone-overlay, 1))',
     ),
     '--dsw-specific-selector': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-overlay, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-overlay, 1))',
+      'rgb(34 38 47 / var(--prism-zone-overlay, 1))',
     ),
     '--dsw-specific-tip': pair(
-      'rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
-      'rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)))',
+      'rgb(255 255 255 / var(--prism-zone-card, 1))',
+      'rgb(34 38 47 / var(--prism-zone-card, 1))',
     ),
 
     // Toasts and tooltips stay readable plates.

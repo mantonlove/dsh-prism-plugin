@@ -143,13 +143,13 @@
 
 /* The settings dialog turns glass material-only (its layout stays stock). */
 [data-dsh-prism] body [role='dialog'] {
-  background: rgb(255 255 255 / calc(0.45 * var(--prism-frost, 1)));
+  background: rgb(255 255 255 / calc(0.45 + 0.55 * var(--prism-zone-overlay, 1)));
   backdrop-filter: blur(50px) saturate(var(--prism-saturate, 130%));
   -webkit-backdrop-filter: blur(50px) saturate(var(--prism-saturate, 130%));
 }
 
 [data-dsh-prism] body[data-ds-dark-theme] [role='dialog'] {
-  background: rgb(17 26 39 / calc(0.55 * var(--prism-frost, 1)));
+  background: rgb(17 26 39 / calc(0.55 + 0.45 * var(--prism-zone-overlay, 1)));
 }
 
 /* While the settings dialog is open the sidebar must not carry a
@@ -294,7 +294,7 @@
 [data-dsh-prism] [data-conversation-composer-overlay] {
   border: 1px solid rgb(19 45 83 / 0.26);
   border-radius: 24px;
-  background: rgb(255 255 255 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)));
+  background: rgb(255 255 255 / var(--prism-zone-input, 1));
   backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
   -webkit-backdrop-filter: blur(var(--prism-blur, 18px)) saturate(var(--prism-saturate, 130%));
   box-shadow:
@@ -304,7 +304,7 @@
 
 [data-dsh-prism] body[data-ds-dark-theme] [data-conversation-composer-overlay] {
   border-color: rgb(148 180 220 / 0.32);
-  background: rgb(34 38 47 / calc(0.85 * var(--prism-frost) * var(--prism-depth, 1) * var(--prism-zone-card, 1)));
+  background: rgb(34 38 47 / var(--prism-zone-input, 1));
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.07),
     0 10px 36px rgb(2 6 14 / 0.5);

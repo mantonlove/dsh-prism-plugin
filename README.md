@@ -1,6 +1,6 @@
 # DSH Background — Custom Background Images & Glassmorphism
 
-**DSH Background** lets you upload your own photos or animated GIFs as the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI background, choose which of them join the carousel, reorder them by dragging, then tune glassmorphism, opacity, typography, colors, and motion. Version 2.0.10 is tested against DSH `0.2.2-rc.3`, retains compatibility with `0.2.2-rc.1+`, and ships prebuilt in `lib/`; installing the plugin does not require a build step.
+**DSH Background** lets you upload your own photos or animated GIFs as the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI background, choose which of them join the carousel, reorder them by dragging, then tune glassmorphism, opacity, typography, colors, and motion. Version 3.0.2 is tested against DSH `0.2.2-rc.3`, retains compatibility with `0.2.2-rc.1+`, and ships prebuilt in `lib/`; the npm package name is `dsh-prism-plugin`, and installing the plugin does not require a build step.
 
 ## Screenshots
 
@@ -85,6 +85,7 @@ dsh plugin --profile web remove dsh-prism-plugin
 
 - **npm distribution:** published on npm as `dsh-prism-plugin`, so the plugin can be installed by package name. Whether a plugin market reports download numbers depends on that platform's own statistics.
 - **Package rename:** the old `@deepseek-ai/dsh-client-ui-prism` name is retired; the `ui-prism` layer id and the `dsh.ui-prism.settings.v1` storage key are unchanged, so saved themes, wallpapers, and preferences carry over.
+- **Zone opacity corrected:** cards, inputs, overlays, and bubbles now use the slider value directly, so 100% is fully opaque. The settings dialog follows the overlay zone and keeps a readable floor instead of letting text sit on the wallpaper.
 
 ## What’s new in v2
 

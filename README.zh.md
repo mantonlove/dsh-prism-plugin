@@ -1,6 +1,6 @@
 # DSH Background — 自定义背景图与毛玻璃主题
 
-**DSH Background** 可以把你自己的照片或 GIF 动图上传为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI 的背景，自己挑哪几张参与轮播、拖动调整顺序，并自由调整毛玻璃、透明度、字体、颜色与动效。v2.0.10 已在 DSH `0.2.2-rc.3` 上完成适配验证，同时保留对 `0.2.2-rc.1+` 的兼容性；仓库自带 `lib/` 预构建产物，安装插件无需执行构建。
+**DSH Background** 可以把你自己的照片或 GIF 动图上传为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web GUI 的背景，自己挑哪几张参与轮播、拖动调整顺序，并自由调整毛玻璃、透明度、字体、颜色与动效。v3.0.2 已在 DSH `0.2.2-rc.3` 上完成适配验证，同时保留对 `0.2.2-rc.1+` 的兼容性；npm 包名为 `dsh-prism-plugin`；仓库自带 `lib/` 预构建产物，安装插件无需执行构建。
 
 ## 效果展示
 
@@ -85,6 +85,7 @@ dsh plugin --profile web remove dsh-prism-plugin
 
 - **npm 分发**：已发布到 npm，包名 `dsh-prism-plugin`，可直接按包名安装。插件市场是否显示下载量，取决于该平台自己的统计口径。
 - **包名迁移**：旧的 `@deepseek-ai/dsh-client-ui-prism` 停用；`ui-prism` 层 id 与 `dsh.ui-prism.settings.v1` 存储键保持不变，原有主题、壁纸与偏好都会沿用。
+- **区域不透明度修正**：卡片、输入框、弹层与气泡改为按滑块值直接合成，100% 即完全不透明；设置弹窗跟随“弹层”区域并保留最低可读底，文字不再压在壁纸上。
 
 ## v2 新特性
 

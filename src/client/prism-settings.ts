@@ -5,8 +5,9 @@
  * through the layer's getters.
  */
 
-/** The six independently adjustable glass zones (opacity 0-100; 100 = follow
- *  the global frost, lower values thin that zone's surfaces). */
+/** The six independently adjustable glass zones (0-100). For card, input,
+ *  overlay and bubble, 100 means fully opaque. For base and sidebar, 100 is
+ *  the material's strongest fill, which still keeps a trace of the wallpaper. */
 export interface PrismZones {
   /** App base background. */
   base: number
@@ -170,7 +171,7 @@ export const CODE_FONT_CHOICES: Readonly<Record<PrismFontChoice, string>> = Obje
 /** localStorage key carrying the knob document. */
 export const PRISM_SETTINGS_KEY = 'dsh.ui-prism.settings.v1'
 
-/** The neutral zone bundle (100 = follow the global frost). */
+/** The shipped zone bundle: content surfaces fully opaque, chrome near-solid. */
 export const DEFAULT_ZONES: PrismZones = Object.freeze({
   base: 100,
   sidebar: 100,

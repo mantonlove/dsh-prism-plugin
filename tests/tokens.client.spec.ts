@@ -28,13 +28,19 @@ describe('buildTokenOverrides', () => {
     }
   })
 
-  it('surfaces scale by frost, depth, and their per-zone knobs', () => {
+  it('content zones are true opacity, chrome still scales by frost', () => {
+    // Chrome (base canvas, sidebar) keeps the material recipe.
     expect(token('--dsw-alias-bg-layer-1').dark).toContain('var(--prism-zone-base')
-    expect(token('--dsw-alias-bg-layer-2').dark).toContain('var(--prism-zone-card')
-    expect(token('--dsw-specific-input-major').light).toContain('var(--prism-zone-input')
-    expect(token('--dsw-specific-menu').dark).toContain('var(--prism-zone-overlay')
-    expect(token('--dsw-specific-bubble').dark).toContain('var(--prism-zone-bubble')
-    expect(token('--dsw-alias-bg-overlay').light).toContain('var(--prism-frost)')
+    expect(token('--dsw-alias-bg-layer-1').dark).toContain('var(--prism-frost)')
+
+    // Content surfaces take the slider verbatim: 100 => fully opaque.
+    for (const name of ['--dsw-alias-bg-layer-2', '--dsw-alias-bg-overlay']) {
+      expect(token(name).light).toContain('var(--prism-zone-')
+      expect(token(name).light).not.toContain('var(--prism-frost)')
+    }
+    expect(token('--dsw-specific-input-major').light).toBe('rgb(255 255 255 / var(--prism-zone-input, 1))')
+    expect(token('--dsw-specific-menu').dark).toBe('rgb(34 38 47 / var(--prism-zone-overlay, 1))')
+    expect(token('--dsw-specific-bubble').dark).toBe('rgb(34 38 47 / var(--prism-zone-bubble, 1))')
   })
 
   it('all chrome surfaces share one canonical dark glass color', () => {
